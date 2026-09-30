@@ -27,7 +27,6 @@ class CharacterRepositoryImpl @Inject constructor(
             page = page,
             name = query.takeIf { it.isNotBlank() },
             status = filters.status,
-            species = filters.species,
             gender = filters.gender,
         )
         val characters = response.results.map { it.toDomain() }
@@ -41,7 +40,6 @@ class CharacterRepositoryImpl @Inject constructor(
         val cached = dao.searchCharacters(
             query = query,
             status = filters.status,
-            species = filters.species,
             gender = filters.gender,
         ).map { it.toDomain() }
         if (cached.isEmpty()) throw error

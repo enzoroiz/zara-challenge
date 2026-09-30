@@ -58,7 +58,7 @@ class CharacterListViewModelTest {
     fun `changing filters reloads the first page with selected criteria`() = runTest {
         val initial = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
         val filtered = Character(2, "Morty Smith", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
-        val filters = CharacterFilters(status = "alive", species = "Human")
+        val filters = CharacterFilters(status = "alive", gender = "male")
         coEvery { useCase(1, "", CharacterFilters()) } returns
             Result.success(CharacterPage(listOf(initial), 1, 2))
         coEvery { useCase(1, "", filters) } returns

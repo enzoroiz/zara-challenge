@@ -34,6 +34,7 @@ fun CharacterRow(
             Column(Modifier.weight(1f)) {
                 Text(character.name, style = MaterialTheme.typography.titleMedium)
                 Text("${character.status} · ${character.species}", style = MaterialTheme.typography.bodyMedium)
+                Text(character.gender, style = MaterialTheme.typography.bodySmall)
                 Text(character.locationName, style = MaterialTheme.typography.bodySmall)
             }
             if (onFavoriteClick != null) {

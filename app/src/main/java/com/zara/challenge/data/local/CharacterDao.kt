@@ -21,7 +21,6 @@ interface CharacterDao {
         SELECT * FROM characters
         WHERE name LIKE '%' || :query || '%'
           AND (:status IS NULL OR status = :status COLLATE NOCASE)
-          AND (:species IS NULL OR species = :species COLLATE NOCASE)
           AND (:gender IS NULL OR gender = :gender COLLATE NOCASE)
         ORDER BY id
         """,
@@ -29,7 +28,6 @@ interface CharacterDao {
     suspend fun searchCharacters(
         query: String,
         status: String?,
-        species: String?,
         gender: String?,
     ): List<CharacterEntity>
 

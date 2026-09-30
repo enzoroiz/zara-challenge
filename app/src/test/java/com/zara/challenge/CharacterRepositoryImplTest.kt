@@ -31,7 +31,6 @@ class CharacterRepositoryImplTest {
                 page = 1,
                 name = "rick",
                 status = "alive",
-                species = "Human",
                 type = null,
                 gender = "male",
             )
@@ -40,7 +39,7 @@ class CharacterRepositoryImplTest {
         val result = repository.getCharacters(
             page = 1,
             query = "rick",
-            filters = CharacterFilters(status = "alive", species = "Human", gender = "male"),
+            filters = CharacterFilters(status = "alive", gender = "male"),
         )
 
         assertTrue(result.isSuccess)
@@ -57,7 +56,6 @@ class CharacterRepositoryImplTest {
                 page = 1,
                 name = null,
                 status = null,
-                species = null,
                 type = null,
                 gender = null,
             )
