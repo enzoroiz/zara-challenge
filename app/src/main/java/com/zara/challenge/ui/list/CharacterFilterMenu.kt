@@ -13,7 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,7 +52,7 @@ fun CharacterFilterMenu(
             ) {
                 Text("Filters", style = MaterialTheme.typography.headlineSmall)
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.Close, contentDescription = "Close filters")
+                    Icon(Icons.Default.Check, contentDescription = "Close filters")
                 }
             }
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -73,6 +73,14 @@ fun CharacterFilterMenu(
                     onFilterChanged(filters.copy(status = selected.takeUnless { it == filters.status }))
                 },
             )
+            Button(
+                onClick = { onFilterChanged(CharacterFilters()) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+            ) {
+                Text("Reset filters")
+            }
         }
     }
 }

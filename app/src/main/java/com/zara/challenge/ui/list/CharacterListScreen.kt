@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -71,15 +74,38 @@ fun CharacterListScreen(
                     title = { Text("Rick & Morty") },
                     actions = {
                         IconButton(onClick = { showFilters = true }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Tune,
-                                contentDescription = "Filter characters",
-                                tint = if (activeFilterCount > 0) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            )
+                            Box {
+                                Icon(
+                                    imageVector = Icons.Outlined.Tune,
+                                    contentDescription = if (activeFilterCount > 0) {
+                                        "Filter characters, $activeFilterCount active"
+                                    } else {
+                                        "Filter characters"
+                                    },
+                                    tint = if (activeFilterCount > 0) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                )
+                                if (activeFilterCount > 0) {
+                                    Box(
+                                        Modifier
+                                            .align(Alignment.TopStart)
+                                            .offset(x = (-2).dp, y = (-2).dp)
+                                            .size(9.dp)
+                                            .border(
+                                                width = 1.5.dp,
+                                                color = MaterialTheme.colorScheme.surface,
+                                                shape = CircleShape,
+                                            )
+                                            .background(
+                                                color = MaterialTheme.colorScheme.error,
+                                                shape = CircleShape,
+                                            ),
+                                    )
+                                }
+                            }
                         }
                     },
                 )
