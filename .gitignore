@@ -1,0 +1,25 @@
+# Gradle
+.gradle/
+**/build/
+
+# Android local configuration and generated files
+local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# IDE settings
+.idea/
+*.iml
+.vscode/
+
+# Kotlin and native build caches
+.kotlin/
+.cxx/
+.externalNativeBuild/
+
+# Operating system files
+.DS_Store
+Thumbs.db

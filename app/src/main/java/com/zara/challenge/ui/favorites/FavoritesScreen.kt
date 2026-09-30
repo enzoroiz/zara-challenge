@@ -1,0 +1,65 @@
+package com.zara.challenge.ui.favorites
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.zara.challenge.domain.model.Character
+import com.zara.challenge.ui.common.CharacterRow
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FavoritesScreen(
+    onCharacterClick: (Int) -> Unit,
+    viewModel: FavoritesViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    Scaffold(topBar = { TopAppBar(title = { Text("Favourites") }) }) { padding ->
+        when {
+            state.isLoading -> Centered(Modifier.padding(padding)) { CircularProgressIndicator() }
+            state.error != null && state.characters.isEmpty() ->
+                Centered(Modifier.padding(padding)) { Text(state.error!!) }
+            state.characters.isEmpty() ->
+                Centered(Modifier.padding(padding)) { Text("No favourites yet") }
+            else -> Column(Modifier.fillMaxSize().padding(padding)) {
+                state.error?.let {
+                    Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.error)
+                }
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(state.characters, key = Character::id) { character ->
+                        CharacterRow(
+                            character = character,
+                            onClick = { onCharacterClick(character.id) },
+                            isFavorite = true,
+                            onFavoriteClick = { viewModel.removeFavorite(character) },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Centered(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) { content() }
+}
