@@ -26,8 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.zara.challenge.domain.model.Character
-import com.zara.challenge.ui.common.CharacterRow
+import com.zara.challenge.ui.common.CharacterCarousel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,10 +89,11 @@ private fun CharacterContent(
         state.actionError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         state.recommendationError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         if (state.similarCharacters.isNotEmpty()) {
-            Text("Because you might be alike", style = MaterialTheme.typography.titleLarge)
-            state.similarCharacters.forEach { similar ->
-                CharacterRow(character = similar, onClick = { onCharacterClick(similar.id) })
-            }
+            CharacterCarousel(
+                title = "Because you might be alike",
+                characters = state.similarCharacters,
+                onCharacterClick = onCharacterClick,
+            )
         }
     }
 }
