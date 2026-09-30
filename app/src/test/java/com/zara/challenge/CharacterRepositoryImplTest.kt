@@ -1,11 +1,11 @@
 package com.zara.challenge
 
 import com.zara.challenge.data.local.CharacterDao
-import com.zara.challenge.data.remote.CharacterDto
-import com.zara.challenge.data.remote.CharacterPageDto
-import com.zara.challenge.data.remote.LocationDto
-import com.zara.challenge.data.remote.PageInfoDto
 import com.zara.challenge.data.remote.ZaraChallengeApi
+import com.zara.challenge.data.remote.dto.CharacterDto
+import com.zara.challenge.data.remote.dto.CharacterPageDto
+import com.zara.challenge.data.remote.dto.LocationDto
+import com.zara.challenge.data.remote.dto.PageInfoDto
 import com.zara.challenge.data.repository.CharacterRepositoryImpl
 import com.zara.challenge.domain.model.CharacterFilters
 import io.mockk.coEvery

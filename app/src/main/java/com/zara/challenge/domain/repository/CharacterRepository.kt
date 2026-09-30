@@ -2,6 +2,7 @@ package com.zara.challenge.domain.repository
 
 import com.zara.challenge.domain.model.Character
 import com.zara.challenge.domain.model.CharacterFilters
+import com.zara.challenge.domain.model.CharacterPage
 import kotlinx.coroutines.flow.Flow
 
 interface CharacterRepository {
@@ -16,5 +17,3 @@ interface CharacterRepository {
     suspend fun toggleFavorite(character: Character): Result<Unit>
     suspend fun getSimilarCharacters(character: Character): Result<List<Character>>
 }
-
-data class CharacterPage(val characters: List<Character>, val page: Int, val totalPages: Int)

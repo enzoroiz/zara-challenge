@@ -7,7 +7,7 @@ import com.zara.challenge.data.remote.dto.toDomain
 import com.zara.challenge.data.remote.dto.toEntity
 import com.zara.challenge.domain.model.Character
 import com.zara.challenge.domain.model.CharacterFilters
-import com.zara.challenge.domain.repository.CharacterPage
+import com.zara.challenge.domain.model.CharacterPage
 import com.zara.challenge.domain.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
