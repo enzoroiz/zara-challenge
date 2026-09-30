@@ -10,9 +10,9 @@ interface CharacterRepository {
         query: String,
         filters: CharacterFilters,
     ): Result<CharacterPage>
-    suspend fun getCharacter(id: Int): Result<Character>
     fun observeFavorites(): Flow<List<Character>>
     fun observeFavoriteIds(): Flow<Set<Int>>
+    suspend fun getCharacter(id: Int): Result<Character>
     suspend fun toggleFavorite(character: Character): Result<Unit>
     suspend fun getSimilarCharacters(character: Character): Result<List<Character>>
 }
