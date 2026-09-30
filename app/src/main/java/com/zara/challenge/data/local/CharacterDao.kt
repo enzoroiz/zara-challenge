@@ -71,6 +71,7 @@ interface CharacterDao {
         WHERE id != :characterId
           AND lower(trim(substr(name, 1, instr(name || ' ', ' ') - 1))) = lower(:firstName)
         ORDER BY name COLLATE NOCASE
+        LIMIT 5
         """,
     )
     suspend fun findByFirstName(firstName: String, characterId: Int): List<CharacterEntity>

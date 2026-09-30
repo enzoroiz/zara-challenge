@@ -89,10 +89,8 @@ private fun CharacterContent(
         DetailRow("Episodes", character.episodeCount.toString())
         state.actionError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         state.recommendationError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        Text("Because you might be alike", style = MaterialTheme.typography.titleLarge)
-        if (state.similarCharacters.isEmpty()) {
-            Text("Browse more characters to build recommendations from your cached characters.")
-        } else {
+        if (state.similarCharacters.isNotEmpty()) {
+            Text("Because you might be alike", style = MaterialTheme.typography.titleLarge)
             state.similarCharacters.forEach { similar ->
                 CharacterRow(character = similar, onClick = { onCharacterClick(similar.id) })
             }
