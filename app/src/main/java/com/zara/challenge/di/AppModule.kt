@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import com.zara.challenge.data.local.CharacterDao
 import com.zara.challenge.data.local.ZaraChallengeDatabase
-import com.zara.challenge.data.local.ZaraChallengeDatabase.Companion.MIGRATION_1_2
 import com.zara.challenge.data.remote.ZaraChallengeApi
 import com.zara.challenge.data.repository.CharacterRepositoryImpl
 import com.zara.challenge.domain.repository.CharacterRepository
@@ -56,7 +55,7 @@ object AppModule {
     @Provides @Singleton
     fun provideDatabase(@ApplicationContext context: Context): ZaraChallengeDatabase =
         Room.databaseBuilder(context, ZaraChallengeDatabase::class.java, "zara_challenge.db")
-            .addMigrations(MIGRATION_1_2)
+            .fallbackToDestructiveMigration()
             .build()
 
     @Provides

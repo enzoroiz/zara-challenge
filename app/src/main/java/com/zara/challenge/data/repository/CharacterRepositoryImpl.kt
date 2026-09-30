@@ -3,8 +3,8 @@ package com.zara.challenge.data.repository
 import com.zara.challenge.data.local.CharacterDao
 import com.zara.challenge.data.local.toEntity as characterToEntity
 import com.zara.challenge.data.remote.ZaraChallengeApi
-import com.zara.challenge.data.remote.toDomain
-import com.zara.challenge.data.remote.toEntity
+import com.zara.challenge.data.remote.dto.toDomain
+import com.zara.challenge.data.remote.dto.toEntity
 import com.zara.challenge.domain.model.Character
 import com.zara.challenge.domain.model.CharacterFilters
 import com.zara.challenge.domain.repository.CharacterPage

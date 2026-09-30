@@ -1,8 +1,6 @@
 package com.zara.challenge.data.local
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.zara.challenge.domain.model.Character
 
@@ -27,20 +25,4 @@ data class CharacterEntity(
 
 fun Character.toEntity() = CharacterEntity(
     id, name, status, species, type, gender, originName, locationName, image, episodeCount, created
-)
-
-@Entity(
-    tableName = "favorite_characters",
-    foreignKeys = [
-        ForeignKey(
-            entity = CharacterEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["characterId"],
-            onDelete = ForeignKey.CASCADE,
-        ),
-    ],
-    indices = [Index(value = ["characterId"])],
-)
-data class FavoriteCharacterEntity(
-    @PrimaryKey val characterId: Int,
 )
