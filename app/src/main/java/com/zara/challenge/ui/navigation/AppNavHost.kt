@@ -7,10 +7,12 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.navigation.NavType
@@ -60,6 +62,13 @@ fun AppNavHost() {
                                 }
                             },
                             label = { Text(label) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color.Black,
+                                selectedTextColor = Color.Black,
+                                unselectedIconColor = Color.Black,
+                                unselectedTextColor = Color.Black,
+                                indicatorColor = Color(0xFFE5E5E5),
+                            ),
                         )
                     }
                 }
