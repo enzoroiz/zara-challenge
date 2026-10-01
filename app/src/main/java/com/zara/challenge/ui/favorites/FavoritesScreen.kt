@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -20,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zara.challenge.domain.model.Character
-import com.zara.challenge.ui.common.CharacterRow
+import com.zara.challenge.ui.common.CharacterCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,15 +42,18 @@ fun FavoritesScreen(
                 state.error?.let {
                     Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.error)
                 }
-                LazyColumn(
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
                     modifier = Modifier.weight(1f),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(state.characters, key = Character::id) { character ->
-                        CharacterRow(
+                        CharacterCard(
                             character = character,
                             onClick = { onCharacterClick(character.id) },
+                            modifier = Modifier.fillMaxWidth(),
                             isFavorite = true,
                             onFavoriteClick = { viewModel.removeFavorite(character) },
                         )

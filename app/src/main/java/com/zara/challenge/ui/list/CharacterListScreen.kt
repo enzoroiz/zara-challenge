@@ -16,8 +16,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Tune
@@ -47,7 +49,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.zara.challenge.ui.common.CharacterRow
+import com.zara.challenge.ui.common.CharacterCard
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -133,27 +135,30 @@ fun CharacterListScreen(
                                     modifier = Modifier.padding(horizontal = 16.dp),
                                 )
                             }
-                            LazyColumn(
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
                                 modifier = Modifier.weight(1f),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
                                 items(state.characters, key = { it.id }) { character ->
-                                    CharacterRow(
+                                    CharacterCard(
                                         character = character,
                                         onClick = { onCharacterClick(character.id) },
+                                        modifier = Modifier.fillMaxWidth(),
                                         isFavorite = character.id in state.favoriteIds,
                                         onFavoriteClick = { viewModel.onFavoriteClick(character) },
                                     )
                                 }
                                 if (!state.endReached) {
-                                    item {
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
                                         Box(
                                             Modifier.fillMaxWidth().padding(20.dp),
                                             contentAlignment = Alignment.Center,
                                         ) {
                                             if (state.isLoadingMore) CircularProgressIndicator()
-                                            else TextButton(onClick = viewModel::loadMore) { Text("Load more") }
+                                            else TextButton(onClick = viewModel::loadMore) { Text("Load More") }
                                         }
                                     }
                                 }
