@@ -1,7 +1,9 @@
 package com.zara.challenge.ui.detail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,9 +18,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -38,50 +40,59 @@ fun CharacterDetailScreen(
     viewModel: CharacterDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    Scaffold(topBar = {
-        TopAppBar(title = { Text("Character") }, navigationIcon = {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-        }, actions = {
-            val characterState = state as? CharacterDetailUiState.Success
-            if (characterState != null) {
-                IconButton(onClick = viewModel::toggleFavorite) {
-                    Icon(
-                        imageVector = if (characterState.isFavorite) {
-                            Icons.Filled.Favorite
-                        } else {
-                            Icons.Outlined.FavoriteBorder
-                        },
-                        contentDescription = if (characterState.isFavorite) {
-                            "Remove from favorites"
-                        } else {
-                            "Add to favorites"
-                        },
-                        tint = if (characterState.isFavorite) {
-                            Color.Red
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
-                    )
-                }
-            }
-        })
-    }) { padding ->
+    Box(Modifier.fillMaxSize()) {
         when (val current = state) {
             CharacterDetailUiState.Loading -> Column(
-                Modifier.fillMaxSize().padding(padding),
+                Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) { CircularProgressIndicator() }
             is CharacterDetailUiState.Error -> Column(
-                Modifier.fillMaxSize().padding(padding).padding(24.dp),
+                Modifier.fillMaxSize().padding(24.dp),
                 verticalArrangement = Arrangement.Center,
             ) { Text(current.message) }
             is CharacterDetailUiState.Success -> CharacterContent(
                 current,
                 onCharacterClick = onCharacterClick,
-                modifier = Modifier.padding(padding),
+                modifier = Modifier.fillMaxSize(),
             )
         }
+        TopAppBar(
+            modifier = Modifier.align(Alignment.TopCenter),
+            title = {},
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+            ),
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                }
+            },
+            actions = {
+                val characterState = state as? CharacterDetailUiState.Success
+                if (characterState != null) {
+                    IconButton(onClick = viewModel::toggleFavorite) {
+                        Icon(
+                            imageVector = if (characterState.isFavorite) {
+                                Icons.Filled.Favorite
+                            } else {
+                                Icons.Outlined.FavoriteBorder
+                            },
+                            contentDescription = if (characterState.isFavorite) {
+                                "Remove from favorites"
+                            } else {
+                                "Add to favorites"
+                            },
+                            tint = if (characterState.isFavorite) {
+                                Color.Red
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                        )
+                    }
+                }
+            }
+        )
     }
 }
 
@@ -93,25 +104,34 @@ private fun CharacterContent(
 ) {
     val character = state.character
     Column(
-        modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        modifier.fillMaxSize().verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        AsyncImage(model = character.image, contentDescription = character.name, modifier = Modifier.fillMaxWidth())
-        Text(character.name, style = MaterialTheme.typography.headlineMedium)
-        Text("${character.status} · ${character.species}", style = MaterialTheme.typography.titleMedium)
-        DetailRow("Gender", character.gender)
-        DetailRow("Type", character.type.ifBlank { "Unknown" })
-        DetailRow("Origin", character.originName)
-        DetailRow("Last known location", character.locationName)
-        DetailRow("Episodes", character.episodeCount.toString())
-        state.actionError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        state.recommendationError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        if (state.similarCharacters.isNotEmpty()) {
-            CharacterCarousel(
-                title = "Because you might be alike",
-                characters = state.similarCharacters,
-                onCharacterClick = onCharacterClick,
-            )
+        AsyncImage(
+            model = character.image,
+            contentDescription = character.name,
+            modifier = Modifier.fillMaxWidth().aspectRatio(1f),
+        )
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(character.name, style = MaterialTheme.typography.headlineMedium)
+            Text("${character.status} · ${character.species}", style = MaterialTheme.typography.titleMedium)
+            DetailRow("Gender", character.gender)
+            DetailRow("Type", character.type.ifBlank { "Unknown" })
+            DetailRow("Origin", character.originName)
+            DetailRow("Last known location", character.locationName)
+            DetailRow("Episodes", character.episodeCount.toString())
+            state.actionError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            state.recommendationError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            if (state.similarCharacters.isNotEmpty()) {
+                CharacterCarousel(
+                    title = "Because you might be alike",
+                    characters = state.similarCharacters,
+                    onCharacterClick = onCharacterClick,
+                )
+            }
         }
     }
 }
