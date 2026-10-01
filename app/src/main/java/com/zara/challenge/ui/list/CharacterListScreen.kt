@@ -71,7 +71,7 @@ fun CharacterListScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Rick & Morty") },
+                    title = { Text("RICK & MORTY") },
                     actions = {
                         IconButton(onClick = { showFilters = true }) {
                             Box {
