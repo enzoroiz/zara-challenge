@@ -31,7 +31,7 @@ fun FavoritesScreen(
     viewModel: FavoritesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    Scaffold(topBar = { TopAppBar(title = { Text("Favourites") }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(title = { Text("Your favourites") }) }) { padding ->
         when {
             state.isLoading -> Centered(Modifier.padding(padding)) { CircularProgressIndicator() }
             state.error != null && state.characters.isEmpty() ->
