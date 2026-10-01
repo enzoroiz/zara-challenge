@@ -2,9 +2,13 @@ package com.zara.challenge.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -41,7 +45,20 @@ fun AppNavHost() {
                                     restoreState = true
                                 }
                             },
-                            icon = { Text(if (route == "characters") "C" else "★") },
+                            icon = {
+                                if (route == "characters") {
+                                    Text("C")
+                                } else {
+                                    Icon(
+                                        imageVector = if (currentRoute == route) {
+                                            Icons.Filled.Favorite
+                                        } else {
+                                            Icons.Outlined.FavoriteBorder
+                                        },
+                                        contentDescription = null,
+                                    )
+                                }
+                            },
                             label = { Text(label) },
                         )
                     }
