@@ -175,9 +175,10 @@ private fun CharacterContent(
             state.recommendationError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             if (state.similarCharacters.isNotEmpty()) {
                 CharacterCarousel(
-                    title = "Because you might be alike",
+                    title = "Characters like you",
                     characters = state.similarCharacters,
                     onCharacterClick = onCharacterClick,
+                    modifier = Modifier.padding(top = 16.dp),
                 )
             }
         }
