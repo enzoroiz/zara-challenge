@@ -86,11 +86,7 @@ fun CharacterListScreen(
                                     } else {
                                         "Filter characters"
                                     },
-                                    tint = if (activeFilterCount > 0) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    },
+                                    tint = Color.Black,
                                 )
                                 if (activeFilterCount > 0) {
                                     Box(
