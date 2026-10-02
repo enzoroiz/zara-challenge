@@ -88,7 +88,10 @@ fun AppNavHost() {
                 CharacterListScreen(onCharacterClick = { navController.navigate("character/$it") })
             }
             composable("favorites") {
-                FavoritesScreen(onCharacterClick = { navController.navigate("character/$it") })
+                FavoritesScreen(
+                    onBack = { navController.popBackStack() },
+                    onCharacterClick = { navController.navigate("character/$it") },
+                )
             }
             composable(
                 route = "character/{characterId}",
