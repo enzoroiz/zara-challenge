@@ -34,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.zara.challenge.ui.common.CharacterCarousel
+import com.zara.challenge.ui.common.CharacterStatusIndicator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,9 +125,20 @@ private fun CharacterContent(
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.Black,
             )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                CharacterStatusIndicator(character.status)
+                Text(
+                    character.status,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.Black,
+                )
+            }
             Text(
-                "${character.status} - ${character.species}",
-                style = MaterialTheme.typography.titleLarge,
+                "${character.species} - ${character.gender}",
+                style = MaterialTheme.typography.titleMedium,
                 color = Color.Gray,
             )
             HorizontalDivider(color = Color(0xFFE5E5E5), thickness = 1.dp)
@@ -152,7 +164,6 @@ private fun CharacterContent(
                 color = Color.Black,
                 fontWeight = FontWeight.Normal,
             )
-            DetailRow("GENDER", character.gender)
             DetailRow("TYPE", character.type.ifBlank { "Unknown" })
             DetailRow("EPISODES", character.episodeCount.toString())
             state.actionError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
