@@ -117,8 +117,13 @@ private fun CharacterContent(
             modifier = Modifier.fillMaxWidth().aspectRatio(1f),
         )
         Column(
-            modifier = Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(
+                start = 20.dp,
+                top = 4.dp,
+                end = 20.dp,
+                bottom = 20.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 character.name,
@@ -164,7 +169,7 @@ private fun CharacterContent(
                 color = Color.Black,
                 fontWeight = FontWeight.Normal,
             )
-            DetailRow("TYPE", character.type.ifBlank { "Unknown" })
+            DetailRow("TYPE", character.type.ifBlank { "-" })
             DetailRow("EPISODES", character.episodeCount.toString())
             state.actionError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             state.recommendationError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
