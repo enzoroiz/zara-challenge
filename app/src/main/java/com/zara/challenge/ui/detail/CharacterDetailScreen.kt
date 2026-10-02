@@ -3,6 +3,7 @@ package com.zara.challenge.ui.detail
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -114,15 +117,44 @@ private fun CharacterContent(
         )
         Column(
             modifier = Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(character.name, style = MaterialTheme.typography.headlineMedium)
-            Text("${character.status} · ${character.species}", style = MaterialTheme.typography.titleMedium)
-            DetailRow("Gender", character.gender)
-            DetailRow("Type", character.type.ifBlank { "Unknown" })
-            DetailRow("Origin", character.originName)
-            DetailRow("Last known location", character.locationName)
-            DetailRow("Episodes", character.episodeCount.toString())
+            Text(
+                character.name,
+                style = MaterialTheme.typography.headlineLarge,
+                color = Color.Black,
+            )
+            Text(
+                "${character.status} - ${character.species}",
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.Gray,
+            )
+            HorizontalDivider(color = Color(0xFFE5E5E5), thickness = 1.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                LocationInfo(
+                    title = "ORIGIN",
+                    value = character.originName,
+                    modifier = Modifier.weight(1f),
+                )
+                LocationInfo(
+                    title = "LOCATION",
+                    value = character.locationName,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            HorizontalDivider(color = Color(0xFFE5E5E5), thickness = 1.dp)
+            Text(
+                "CHARACTER DETAILS",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.Black,
+                fontWeight = FontWeight.Normal,
+            )
+            DetailRow("GENDER", character.gender)
+            DetailRow("TYPE", character.type.ifBlank { "Unknown" })
+            DetailRow("EPISODES", character.episodeCount.toString())
             state.actionError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             state.recommendationError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             if (state.similarCharacters.isNotEmpty()) {
@@ -136,4 +168,25 @@ private fun CharacterContent(
     }
 }
 
-@Composable private fun DetailRow(label: String, value: String) { Text("$label: $value", style = MaterialTheme.typography.bodyLarge) }
+@Composable
+private fun LocationInfo(
+    title: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(title, style = MaterialTheme.typography.labelLarge, color = Color.Black)
+        Text(value, style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+    }
+}
+
+@Composable
+private fun DetailRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = Color.Black)
+        Text(value, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+    }
+}
