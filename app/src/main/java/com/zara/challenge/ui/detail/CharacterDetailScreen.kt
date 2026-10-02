@@ -186,8 +186,8 @@ private fun LocationInfo(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(title, style = MaterialTheme.typography.labelLarge, color = Color.Black)
-        Text(value, style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+        Text(title, style = MaterialTheme.typography.labelLarge, color = Color.Gray)
+        Text(value, style = MaterialTheme.typography.bodyLarge, color = Color.Black)
     }
 }
 
@@ -195,9 +195,18 @@ private fun LocationInfo(
 private fun DetailRow(label: String, value: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = Color.Black)
-        Text(value, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+        Text(
+            label,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+        )
+        Text(
+            value,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Black,
+        )
     }
 }
