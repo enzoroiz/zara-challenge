@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.zara.challenge.domain.model.CharacterFilters
 import com.zara.challenge.ui.common.CharacterCard
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.collect
@@ -243,5 +244,17 @@ private fun ErrorBox(retry: () -> Unit) =
         verticalArrangement = Arrangement.Center,
     ) {
         Text("Unable to load characters")
-        IconButton(onClick = retry) { Text("Retry") }
+        OutlinedButton(
+            onClick = { retry() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 24.dp),
+            border = BorderStroke(1.dp, Color.Black),
+            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = Color.Black,
+            ),
+        ) {
+            Text("RETRY")
+        }
     }
