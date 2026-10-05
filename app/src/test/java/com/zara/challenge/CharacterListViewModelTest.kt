@@ -138,6 +138,32 @@ class CharacterListViewModelTest {
     }
 
     @Test
+    fun `changing the query cancels an in-flight load more`() = runTest {
+        val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
+        val pending = CompletableDeferred<Result<CharacterPage>>()
+        coEvery { useCase(1, "", CharacterFilters()) } returns
+            Result.success(CharacterPage(listOf(rick), 1, 2))
+        coEvery { useCase(2, "", CharacterFilters()) } coAnswers { pending.await() }
+        coEvery { useCase(1, "morty", CharacterFilters()) } returns
+            Result.success(CharacterPage(emptyList(), 1, 1))
+
+        val vm = CharacterListViewModel(useCase, observeFavoriteIds, toggleFavorite)
+        dispatcher.scheduler.advanceUntilIdle()
+        vm.loadMore()
+        dispatcher.scheduler.runCurrent()
+        assertTrue(vm.uiState.value.isLoadingMore)
+
+        vm.onQueryChanged("morty")
+        assertFalse(vm.uiState.value.isLoadingMore)
+        assertTrue(pending.isCancelled || !pending.isCompleted)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        pending.complete(Result.success(CharacterPage(listOf(rick), 2, 2)))
+        dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(vm.uiState.value.characters.isEmpty())
+    }
+
+    @Test
     fun `cached results emit one offline notice`() = runTest {
         val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
         coEvery { useCase(1, "", CharacterFilters()) } returns

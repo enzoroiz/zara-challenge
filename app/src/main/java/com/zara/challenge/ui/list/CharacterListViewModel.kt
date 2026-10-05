@@ -13,6 +13,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,6 +47,7 @@ class CharacterListViewModel @Inject constructor(
     private var totalPages = Int.MAX_VALUE
     private var searchJob: Job? = null
     private var listLoadJob: Job? = null
+    private var loadMoreJob: Job? = null
     private var requestId = 0
     private var isOffline = false
 
@@ -59,6 +61,7 @@ class CharacterListViewModel @Inject constructor(
     }
 
     fun onQueryChanged(query: String) {
+        cancelLoadMore()
         _uiState.value = _uiState.value.copy(query = query)
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
@@ -69,12 +72,14 @@ class CharacterListViewModel @Inject constructor(
 
     fun onFiltersChanged(filters: CharacterFilters) {
         searchJob?.cancel()
+        cancelLoadMore()
         _uiState.value = _uiState.value.copy(filters = filters)
         loadInitial()
     }
 
     fun loadInitial() {
         listLoadJob?.cancel()
+        loadMoreJob?.cancel()
         val request = ++requestId
         val query = _uiState.value.query
         val filters = _uiState.value.filters
@@ -114,8 +119,10 @@ class CharacterListViewModel @Inject constructor(
         val request = requestId
         val page = currentPage + 1
         _uiState.value = state.copy(isLoadingMore = true)
-        viewModelScope.launch {
-            getCharacters(page, state.query, state.filters).onSuccess { result ->
+        loadMoreJob = viewModelScope.launch {
+            val response = getCharacters(page, state.query, state.filters)
+            ensureActive()
+            response.onSuccess { result ->
                 if (request != requestId) return@onSuccess
                 notifyIfOffline(result.isFromCache)
                 currentPage = result.page
@@ -130,6 +137,14 @@ class CharacterListViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(isLoadingMore = false)
                 _errorEvents.trySend(error.toUserMessage()).getOrThrow()
             }
+        }
+    }
+
+    private fun cancelLoadMore() {
+        loadMoreJob?.cancel()
+        loadMoreJob = null
+        if (_uiState.value.isLoadingMore) {
+            _uiState.value = _uiState.value.copy(isLoadingMore = false)
         }
     }
 
