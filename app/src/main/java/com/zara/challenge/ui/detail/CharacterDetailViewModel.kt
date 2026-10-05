@@ -1,5 +1,6 @@
 package com.zara.challenge.ui.detail
 
+import com.zara.challenge.ui.common.toUserMessage
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -79,7 +80,7 @@ class CharacterDetailViewModel @Inject constructor(
                     )
                 }
         }
-            .onFailure { _uiState.value = CharacterDetailUiState.Error(it.message ?: "Unable to load character") }
+            .onFailure { _uiState.value = CharacterDetailUiState.Error(it.toUserMessage()) }
     }
 
     fun toggleFavorite() {

@@ -1,5 +1,6 @@
 package com.zara.challenge.ui.list
 
+import com.zara.challenge.ui.common.toUserMessage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zara.challenge.domain.model.Character
@@ -98,7 +99,7 @@ class CharacterListViewModel @Inject constructor(
                 )
             }.onFailure { error ->
                 if (request != requestId) return@onFailure
-                val message = error.userMessage()
+                val message = error.toUserMessage()
                 _uiState.value = _uiState.value.copy(isLoading = false, hasLoadError = true)
                 _errorEvents.trySend(message).getOrThrow()
             }
@@ -124,7 +125,7 @@ class CharacterListViewModel @Inject constructor(
             }.onFailure { error ->
                 if (request != requestId) return@onFailure
                 _uiState.value = _uiState.value.copy(isLoadingMore = false)
-                _errorEvents.trySend(error.userMessage()).getOrThrow()
+                _errorEvents.trySend(error.toUserMessage()).getOrThrow()
             }
         }
     }
@@ -139,6 +140,3 @@ class CharacterListViewModel @Inject constructor(
 
     fun retry() = loadInitial()
 }
-
-private fun Throwable.userMessage() =
-    message?.takeIf(String::isNotBlank) ?: "Something went wrong. Please try again."
