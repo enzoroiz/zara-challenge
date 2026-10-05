@@ -1,5 +1,6 @@
 package com.zara.challenge.ui.detail
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,9 +21,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -40,6 +42,8 @@ import coil3.compose.AsyncImage
 import com.zara.challenge.domain.model.Character
 import com.zara.challenge.ui.common.CharacterCarousel
 import com.zara.challenge.ui.common.CharacterStatusIndicator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +59,18 @@ fun CharacterDetailScreen(
             snackbarHostState.showSnackbar(message)
         }
     }
+    LaunchedEffect(state) {
+        if (state == CharacterDetailUiState.Unavailable) {
+            launch {
+                snackbarHostState.showSnackbar(
+                    message = "Couldn't retrieve the character information",
+                    duration = SnackbarDuration.Indefinite,
+                )
+            }
+            delay(1_000)
+            onBack()
+        }
+    }
     Box(Modifier.fillMaxSize()) {
         when (val current = state) {
             CharacterDetailUiState.Loading -> Column(
@@ -62,10 +78,9 @@ fun CharacterDetailScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) { CircularProgressIndicator() }
-            is CharacterDetailUiState.Error -> Column(
-                Modifier.fillMaxSize().padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-            ) { Text(current.message) }
+            CharacterDetailUiState.Unavailable -> CharacterUnavailableContent(
+                modifier = Modifier.fillMaxSize(),
+            )
             is CharacterDetailUiState.Success -> CharacterContent(
                 current,
                 onCharacterClick = onCharacterClick,
@@ -113,6 +128,51 @@ fun CharacterDetailScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
+    }
+}
+
+@Composable
+private fun CharacterUnavailableContent(modifier: Modifier) {
+    Column(
+        modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .background(Color.LightGray),
+        )
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(
+                start = 20.dp,
+                top = 4.dp,
+                end = 20.dp,
+                bottom = 20.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("-", style = MaterialTheme.typography.headlineLarge, color = Color.Black)
+            Text("-", style = MaterialTheme.typography.titleLarge, color = Color.Black)
+            Text("-", style = MaterialTheme.typography.titleMedium, color = Color.Gray)
+            HorizontalDivider(color = Color(0xFFE5E5E5), thickness = 1.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                LocationInfo(title = "ORIGIN", value = "-", modifier = Modifier.weight(1f))
+                LocationInfo(title = "LOCATION", value = "-", modifier = Modifier.weight(1f))
+            }
+            HorizontalDivider(color = Color(0xFFE5E5E5), thickness = 1.dp)
+            Text(
+                "CHARACTER DETAILS",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.Black,
+                fontWeight = FontWeight.Normal,
+            )
+            DetailRow("TYPE", "-")
+            DetailRow("EPISODES", "-")
+        }
     }
 }
 

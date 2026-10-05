@@ -1,6 +1,7 @@
 package com.zara.challenge
 
 import com.zara.challenge.data.local.CharacterDao
+import com.zara.challenge.data.local.CharacterEntity
 import com.zara.challenge.data.remote.ZaraChallengeApi
 import com.zara.challenge.data.remote.dto.CharacterDto
 import com.zara.challenge.data.remote.dto.CharacterPageDto
@@ -68,6 +69,40 @@ class CharacterRepositoryImplTest {
         assertEquals(0, result.getOrThrow().totalPages)
     }
 
+    @Test
+    fun `detail is retrieved from the database without making an API request`() = runTest {
+        coEvery { dao.getCharacter(1) } returns characterEntity()
+
+        val result = repository.getCharacter(1)
+
+        assertTrue(result.isSuccess)
+        assertEquals("Rick Sanchez", result.getOrThrow().name)
+        coVerify { dao.getCharacter(1) }
+        coVerify(exactly = 0) {
+            api.getCharacters(any(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `missing cached detail is a failure`() = runTest {
+        coEvery { dao.getCharacter(1) } returns null
+
+        val result = repository.getCharacter(1)
+
+        assertTrue(result.isFailure)
+        assertEquals("Character 1 is not cached", result.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun `database detail read failure is returned as a failure`() = runTest {
+        coEvery { dao.getCharacter(1) } throws IllegalStateException("Database unavailable")
+
+        val result = repository.getCharacter(1)
+
+        assertTrue(result.isFailure)
+        assertEquals("Database unavailable", result.exceptionOrNull()?.message)
+    }
+
     private fun characterDto() = CharacterDto(
         id = 1,
         name = "Rick Sanchez",
@@ -80,6 +115,20 @@ class CharacterRepositoryImplTest {
         image = "image",
         episode = emptyList(),
         url = "",
+        created = "",
+    )
+
+    private fun characterEntity() = CharacterEntity(
+        id = 1,
+        name = "Rick Sanchez",
+        status = "Alive",
+        species = "Human",
+        type = "",
+        gender = "Male",
+        originName = "Earth",
+        locationName = "Earth",
+        image = "image",
+        episodeCount = 1,
         created = "",
     )
 }

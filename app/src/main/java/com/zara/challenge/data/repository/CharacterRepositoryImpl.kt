@@ -47,9 +47,7 @@ class CharacterRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCharacter(id: Int): Result<Character> = runCatching {
-        api.getCharacter(id).also { dao.upsertAll(listOf(it.toEntity())) }.toDomain()
-    }.recoverCatching { error ->
-        dao.getCharacter(id)?.toDomain() ?: throw error
+        requireNotNull(dao.getCharacter(id)) { "Character $id is not cached" }.toDomain()
     }
 
     override fun observeFavorites(): Flow<List<Character>> =

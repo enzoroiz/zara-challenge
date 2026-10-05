@@ -1,12 +1,11 @@
 package com.zara.challenge.ui.detail
 
-import com.zara.challenge.ui.common.toUserMessage
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zara.challenge.domain.model.Character
-import com.zara.challenge.domain.usecase.GetSimilarCharactersUseCase
 import com.zara.challenge.domain.usecase.GetCharacterUseCase
+import com.zara.challenge.domain.usecase.GetSimilarCharactersUseCase
 import com.zara.challenge.domain.usecase.ObserveFavoriteIdsUseCase
 import com.zara.challenge.domain.usecase.ToggleFavoriteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +20,7 @@ import kotlinx.coroutines.launch
 
 sealed interface CharacterDetailUiState {
     data object Loading : CharacterDetailUiState
+    data object Unavailable : CharacterDetailUiState
     data class Success(
         val character: Character,
         val isFavorite: Boolean = false,
@@ -28,7 +28,6 @@ sealed interface CharacterDetailUiState {
         val similarCharacters: List<Character> = emptyList(),
         val recommendationError: String? = null,
     ) : CharacterDetailUiState
-    data class Error(val message: String) : CharacterDetailUiState
 }
 
 @HiltViewModel
@@ -79,8 +78,9 @@ class CharacterDetailViewModel @Inject constructor(
                         recommendationError = error.message ?: "Unable to load recommendations",
                     )
                 }
+        }.onFailure {
+            _uiState.value = CharacterDetailUiState.Unavailable
         }
-            .onFailure { _uiState.value = CharacterDetailUiState.Error(it.toUserMessage()) }
     }
 
     fun toggleFavorite() {
