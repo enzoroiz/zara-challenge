@@ -1,6 +1,5 @@
 package com.zara.challenge
 
-import app.cash.turbine.test
 import com.zara.challenge.domain.model.CharacterFilters
 import com.zara.challenge.domain.model.CharacterPage
 import com.zara.challenge.domain.usecase.GetCharactersUseCase
@@ -15,13 +14,16 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -165,10 +167,7 @@ class CharacterListViewModelPagingTest {
 
         val vm = createViewModel()
 
-        vm.errorEvents.test {
-            assertEquals("Too many requests. Please try again later.", awaitItem())
-            cancelAndIgnoreRemainingEvents()
-        }
+        assertEquals("Too many requests. Please try again later.", vm.errorEvents.first())
         assertTrue(vm.uiState.value.hasLoadError)
     }
 
@@ -207,10 +206,10 @@ class CharacterListViewModelPagingTest {
         vm.onFavoriteClick(rick)
         idle()
 
-        vm.errorEvents.test {
-            assertEquals("Couldn't update your favourites. Please try again.", awaitItem())
-            cancelAndIgnoreRemainingEvents()
-        }
+        assertEquals(
+            "Couldn't update your favourites. Please try again.",
+            vm.errorEvents.first(),
+        )
     }
 
     @Test
@@ -223,12 +222,9 @@ class CharacterListViewModelPagingTest {
         vm.loadInitial(); idle()
         vm.loadInitial(); idle()
 
-        vm.errorEvents.test {
-            assertEquals("You're seeing offline results", awaitItem())
-            assertEquals("You're seeing offline results", awaitItem())
-            expectNoEvents()
-            cancelAndIgnoreRemainingEvents()
-        }
+        assertEquals("You're seeing offline results", vm.errorEvents.first())
+        assertEquals("You're seeing offline results", vm.errorEvents.first())
+        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 
     @Test

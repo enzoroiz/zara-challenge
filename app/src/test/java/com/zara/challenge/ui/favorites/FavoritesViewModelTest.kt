@@ -1,6 +1,5 @@
 package com.zara.challenge.ui.favorites
 
-import app.cash.turbine.test
 import com.zara.challenge.domain.usecase.ObserveFavoritesUseCase
 import com.zara.challenge.domain.usecase.ToggleFavoriteUseCase
 import com.zara.challenge.testCharacter
@@ -12,11 +11,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -95,7 +96,7 @@ class FavoritesViewModelTest {
         dispatcher.scheduler.advanceUntilIdle()
 
         coVerify(exactly = 1) { toggleFavorite(rick) }
-        vm.errorEvents.test { expectNoEvents() }
+        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 
     @Test
@@ -107,9 +108,9 @@ class FavoritesViewModelTest {
         vm.removeFavorite(rick)
         dispatcher.scheduler.advanceUntilIdle()
 
-        vm.errorEvents.test {
-            assertEquals("Couldn't update your favourites. Please try again.", awaitItem())
-            cancelAndIgnoreRemainingEvents()
-        }
+        assertEquals(
+            "Couldn't update your favourites. Please try again.",
+            vm.errorEvents.first(),
+        )
     }
 }

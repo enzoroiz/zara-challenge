@@ -1,6 +1,5 @@
 package com.zara.challenge
 
-import app.cash.turbine.test
 import com.zara.challenge.domain.model.Character
 import com.zara.challenge.domain.model.CharacterFilters
 import com.zara.challenge.domain.model.CharacterPage
@@ -15,13 +14,16 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -48,12 +50,9 @@ class CharacterListViewModelTest {
         val vm = CharacterListViewModel(useCase, observeFavoriteIds, toggleFavorite)
         dispatcher.scheduler.advanceUntilIdle()
 
-        vm.uiState.test {
-            val state = awaitItem()
-            assertEquals("Rick Sanchez", state.characters.single().name)
-            assertFalse(state.isLoading)
-            cancelAndIgnoreRemainingEvents()
-        }
+        val state = vm.uiState.value
+        assertEquals("Rick Sanchez", state.characters.single().name)
+        assertFalse(state.isLoading)
     }
 
     @Test
@@ -71,13 +70,10 @@ class CharacterListViewModelTest {
         vm.onFiltersChanged(filters)
         dispatcher.scheduler.advanceUntilIdle()
 
-        vm.uiState.test {
-            val state = awaitItem()
-            assertEquals(filters, state.filters)
-            assertEquals("Morty Smith", state.characters.single().name)
-            assertFalse(state.isLoading)
-            cancelAndIgnoreRemainingEvents()
-        }
+        val state = vm.uiState.value
+        assertEquals(filters, state.filters)
+        assertEquals("Morty Smith", state.characters.single().name)
+        assertFalse(state.isLoading)
     }
 
     @Test
@@ -90,11 +86,8 @@ class CharacterListViewModelTest {
 
         assertFalse(vm.uiState.value.isLoading)
         assertTrue(vm.uiState.value.hasLoadError)
-        vm.errorEvents.test {
-            assertEquals("Something went wrong", awaitItem())
-            expectNoEvents()
-            cancelAndIgnoreRemainingEvents()
-        }
+        assertEquals("Something went wrong", vm.errorEvents.first())
+        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 
     @Test
@@ -130,11 +123,8 @@ class CharacterListViewModelTest {
         assertEquals(listOf(rick), vm.uiState.value.characters)
         assertFalse(vm.uiState.value.isLoadingMore)
         assertFalse(vm.uiState.value.hasLoadError)
-        vm.errorEvents.test {
-            assertEquals("Something went wrong", awaitItem())
-            expectNoEvents()
-            cancelAndIgnoreRemainingEvents()
-        }
+        assertEquals("Something went wrong", vm.errorEvents.first())
+        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 
     @Test
@@ -174,10 +164,7 @@ class CharacterListViewModelTest {
         vm.loadInitial()
         dispatcher.scheduler.advanceUntilIdle()
 
-        vm.errorEvents.test {
-            assertEquals("You're seeing offline results", awaitItem())
-            expectNoEvents()
-            cancelAndIgnoreRemainingEvents()
-        }
+        assertEquals("You're seeing offline results", vm.errorEvents.first())
+        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 }

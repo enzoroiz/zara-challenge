@@ -1,7 +1,6 @@
 package com.zara.challenge
 
 import androidx.lifecycle.SavedStateHandle
-import app.cash.turbine.test
 import com.zara.challenge.domain.usecase.GetCharacterUseCase
 import com.zara.challenge.domain.usecase.GetSimilarCharactersUseCase
 import com.zara.challenge.domain.usecase.ObserveFavoriteIdsUseCase
@@ -15,12 +14,14 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -198,10 +199,10 @@ class CharacterDetailViewModelStateTest {
         vm.toggleFavorite(rick)
         advanceUntilIdle()
 
-        vm.errorEvents.test {
-            assertEquals("Couldn't update your favourites. Please try again.", awaitItem())
-            expectNoEvents()
-            cancelAndIgnoreRemainingEvents()
-        }
+        assertEquals(
+            "Couldn't update your favourites. Please try again.",
+            vm.errorEvents.first(),
+        )
+        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 }
