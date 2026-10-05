@@ -11,6 +11,7 @@ import com.zara.challenge.ui.list.CharacterListViewModel
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -23,6 +24,7 @@ import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CharacterListViewModelTest {
@@ -74,6 +76,63 @@ class CharacterListViewModelTest {
             assertEquals(filters, state.filters)
             assertEquals("Morty Smith", state.characters.single().name)
             assertFalse(state.isLoading)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `initial request failure emits one error and leaves a retryable error state`() = runTest {
+        coEvery { useCase(1, "", CharacterFilters()) } returns
+            Result.failure(IllegalStateException("Request failed"))
+
+        val vm = CharacterListViewModel(useCase, observeFavoriteIds, toggleFavorite)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.isLoading)
+        assertTrue(vm.uiState.value.hasLoadError)
+        vm.errorEvents.test {
+            assertEquals("Request failed", awaitItem())
+            expectNoEvents()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `initial load reports loading until the request completes`() = runTest {
+        val result = CompletableDeferred<Result<CharacterPage>>()
+        coEvery { useCase(1, "", CharacterFilters()) } coAnswers { result.await() }
+
+        val vm = CharacterListViewModel(useCase, observeFavoriteIds, toggleFavorite)
+        dispatcher.scheduler.runCurrent()
+        assertTrue(vm.uiState.value.isLoading)
+
+        result.complete(Result.success(CharacterPage(emptyList(), 1, 1)))
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.isLoading)
+        assertFalse(vm.uiState.value.hasLoadError)
+    }
+
+    @Test
+    fun `load more failure preserves existing characters and emits one error`() = runTest {
+        val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
+        coEvery { useCase(1, "", CharacterFilters()) } returns
+            Result.success(CharacterPage(listOf(rick), 1, 2))
+        coEvery { useCase(2, "", CharacterFilters()) } returns
+            Result.failure(IllegalStateException("Next page failed"))
+
+        val vm = CharacterListViewModel(useCase, observeFavoriteIds, toggleFavorite)
+        dispatcher.scheduler.advanceUntilIdle()
+        vm.loadMore()
+        assertTrue(vm.uiState.value.isLoadingMore)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(listOf(rick), vm.uiState.value.characters)
+        assertFalse(vm.uiState.value.isLoadingMore)
+        assertFalse(vm.uiState.value.hasLoadError)
+        vm.errorEvents.test {
+            assertEquals("Next page failed", awaitItem())
+            expectNoEvents()
             cancelAndIgnoreRemainingEvents()
         }
     }

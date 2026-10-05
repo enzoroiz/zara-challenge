@@ -10,20 +10,21 @@ import com.zara.challenge.domain.usecase.GetCharactersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 data class CharacterListUiState(
     val characters: List<Character> = emptyList(),
     val query: String = "",
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val isLoadingMore: Boolean = false,
-    val isRefreshing: Boolean = false,
-    val error: String? = null,
+    val hasLoadError: Boolean = false,
     val endReached: Boolean = false,
     val filters: CharacterFilters = CharacterFilters(),
     val favoriteIds: Set<Int> = emptySet(),
@@ -37,6 +38,8 @@ class CharacterListViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CharacterListUiState())
     val uiState: StateFlow<CharacterListUiState> = _uiState.asStateFlow()
+    private val _errorEvents = Channel<String>(Channel.BUFFERED)
+    val errorEvents = _errorEvents.receiveAsFlow()
 
     private var currentPage = 0
     private var totalPages = Int.MAX_VALUE
@@ -78,7 +81,7 @@ class CharacterListViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             isLoading = true,
             isLoadingMore = false,
-            error = null,
+            hasLoadError = false,
             characters = emptyList(),
             endReached = false,
         )
@@ -90,11 +93,14 @@ class CharacterListViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     characters = page.characters,
                     isLoading = false,
+                    hasLoadError = false,
                     endReached = page.page >= page.totalPages,
                 )
             }.onFailure { error ->
                 if (request != requestId) return@onFailure
-                _uiState.value = _uiState.value.copy(isLoading = false, error = error.userMessage())
+                val message = error.userMessage()
+                _uiState.value = _uiState.value.copy(isLoading = false, hasLoadError = true)
+                _errorEvents.trySend(message).getOrThrow()
             }
         }
     }
@@ -103,20 +109,22 @@ class CharacterListViewModel @Inject constructor(
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || currentPage >= totalPages) return
         val request = requestId
+        val page = currentPage + 1
+        _uiState.value = state.copy(isLoadingMore = true)
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoadingMore = true, error = null)
-            getCharacters(currentPage + 1, state.query, state.filters).onSuccess { page ->
+            getCharacters(page, state.query, state.filters).onSuccess { result ->
                 if (request != requestId) return@onSuccess
-                currentPage = page.page
-                totalPages = page.totalPages
+                currentPage = result.page
+                totalPages = result.totalPages
                 _uiState.value = _uiState.value.copy(
-                    characters = _uiState.value.characters + page.characters,
+                    characters = _uiState.value.characters + result.characters,
                     isLoadingMore = false,
-                    endReached = page.page >= page.totalPages,
+                    endReached = result.page >= result.totalPages,
                 )
             }.onFailure { error ->
                 if (request != requestId) return@onFailure
-                _uiState.value = _uiState.value.copy(isLoadingMore = false, error = error.userMessage())
+                _uiState.value = _uiState.value.copy(isLoadingMore = false)
+                _errorEvents.trySend(error.userMessage()).getOrThrow()
             }
         }
     }
@@ -124,7 +132,7 @@ class CharacterListViewModel @Inject constructor(
     fun onFavoriteClick(character: Character) {
         viewModelScope.launch {
             toggleFavorite(character).onFailure { error ->
-                _uiState.value = _uiState.value.copy(error = error.userMessage())
+                _errorEvents.trySend(error.userMessage()).getOrThrow()
             }
         }
     }
@@ -132,4 +140,5 @@ class CharacterListViewModel @Inject constructor(
     fun retry() = loadInitial()
 }
 
-private fun Throwable.userMessage() = message ?: "Something went wrong. Please try again."
+private fun Throwable.userMessage() =
+    message?.takeIf(String::isNotBlank) ?: "Something went wrong. Please try again."

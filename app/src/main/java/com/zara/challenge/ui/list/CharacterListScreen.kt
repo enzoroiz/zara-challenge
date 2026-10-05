@@ -33,12 +33,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,6 +56,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zara.challenge.ui.common.CharacterCard
 import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.collect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +65,12 @@ fun CharacterListScreen(
     viewModel: CharacterListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(viewModel, snackbarHostState) {
+        viewModel.errorEvents.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
     var showFilters by remember { mutableStateOf(false) }
     var menuWidthPx by remember { mutableStateOf(0) }
     val menuProgress by animateFloatAsState(
@@ -73,6 +83,7 @@ fun CharacterListScreen(
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
                     title = { Text("RICK & MORTY") },
@@ -122,17 +133,11 @@ fun CharacterListScreen(
                 )
                 Box(Modifier.weight(1f).fillMaxWidth()) {
                     when {
-                        state.isLoading && state.characters.isEmpty() -> LoadingBox()
-                        state.error != null && state.characters.isEmpty() -> ErrorBox(state.error!!, viewModel::retry)
+                        state.isLoading -> LoadingBox()
+                        state.hasLoadError && state.characters.isEmpty() ->
+                            ErrorBox { viewModel.retry() }
                         state.characters.isEmpty() -> EmptyBox()
                         else -> Column(Modifier.fillMaxSize()) {
-                            if (state.error != null) {
-                                Text(
-                                    state.error!!,
-                                    color = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                )
-                            }
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(2),
                                 modifier = Modifier.weight(1f),
@@ -231,12 +236,12 @@ private fun EmptyBox() = Box(Modifier.fillMaxSize(), contentAlignment = Alignmen
 }
 
 @Composable
-private fun ErrorBox(message: String, retry: () -> Unit) =
+private fun ErrorBox(retry: () -> Unit) =
     Column(
         Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(message)
+        Text("Unable to load characters")
         IconButton(onClick = retry) { Text("Retry") }
     }
