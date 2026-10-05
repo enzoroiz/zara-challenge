@@ -44,6 +44,7 @@ import com.zara.challenge.ui.common.CharacterCarousel
 import com.zara.challenge.ui.common.CharacterStatusIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +68,7 @@ fun CharacterDetailScreen(
                     duration = SnackbarDuration.Indefinite,
                 )
             }
-            delay(1_000)
+            delay(3.seconds)
             onBack()
         }
     }
