@@ -136,4 +136,22 @@ class CharacterListViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
+
+    @Test
+    fun `cached results emit one offline notice`() = runTest {
+        val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
+        coEvery { useCase(1, "", CharacterFilters()) } returns
+            Result.success(CharacterPage(listOf(rick), 1, 1, isFromCache = true))
+
+        val vm = CharacterListViewModel(useCase, observeFavoriteIds, toggleFavorite)
+        dispatcher.scheduler.advanceUntilIdle()
+        vm.loadInitial()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.errorEvents.test {
+            assertEquals("You're seeing offline results", awaitItem())
+            expectNoEvents()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }

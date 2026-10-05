@@ -43,7 +43,7 @@ class CharacterRepositoryImpl @Inject constructor(
             gender = filters.gender,
         ).map { it.toDomain() }
         if (cached.isEmpty()) throw error
-        CharacterPage(cached, page = 1, totalPages = 1)
+        CharacterPage(cached, page = 1, totalPages = 1, isFromCache = true)
     }
 
     override suspend fun getCharacter(id: Int): Result<Character> = runCatching {

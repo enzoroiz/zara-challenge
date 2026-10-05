@@ -47,6 +47,7 @@ class CharacterListViewModel @Inject constructor(
     private var searchJob: Job? = null
     private var listLoadJob: Job? = null
     private var requestId = 0
+    private var isOffline = false
 
     init {
         viewModelScope.launch {
@@ -89,6 +90,7 @@ class CharacterListViewModel @Inject constructor(
         listLoadJob = viewModelScope.launch {
             getCharacters(1, query, filters).onSuccess { page ->
                 if (request != requestId) return@onSuccess
+                notifyIfOffline(page.isFromCache)
                 currentPage = page.page
                 totalPages = page.totalPages
                 _uiState.value = _uiState.value.copy(
@@ -115,6 +117,7 @@ class CharacterListViewModel @Inject constructor(
         viewModelScope.launch {
             getCharacters(page, state.query, state.filters).onSuccess { result ->
                 if (request != requestId) return@onSuccess
+                notifyIfOffline(result.isFromCache)
                 currentPage = result.page
                 totalPages = result.totalPages
                 _uiState.value = _uiState.value.copy(
@@ -128,6 +131,13 @@ class CharacterListViewModel @Inject constructor(
                 _errorEvents.trySend(error.toUserMessage()).getOrThrow()
             }
         }
+    }
+
+    private fun notifyIfOffline(isFromCache: Boolean) {
+        if (isFromCache && !isOffline) {
+            _errorEvents.trySend("You're seeing offline results")
+        }
+        isOffline = isFromCache
     }
 
     fun onFavoriteClick(character: Character) {
