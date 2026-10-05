@@ -4,6 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -36,10 +37,26 @@ private val ZaraChallengeTypography = Typography().run {
     )
 }
 
+private val ZaraChallengeColorScheme = lightColorScheme(
+    primary = Color.Black,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFE5E5E5),
+    onPrimaryContainer = Color.Black,
+    secondary = Color.Black,
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFE5E5E5),
+    onSecondaryContainer = Color.Black,
+    tertiary = Color.Black,
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFE5E5E5),
+    onTertiaryContainer = Color.Black,
+    surfaceTint = Color.Black,
+)
+
 @Composable
 fun ZaraChallengeTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = lightColorScheme(),
+        colorScheme = ZaraChallengeColorScheme,
         typography = ZaraChallengeTypography,
         content = content
     )
