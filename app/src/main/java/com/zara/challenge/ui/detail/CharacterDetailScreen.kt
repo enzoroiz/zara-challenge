@@ -21,10 +21,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.zara.challenge.domain.model.Character
 import com.zara.challenge.ui.common.CharacterCarousel
 import com.zara.challenge.ui.common.CharacterStatusIndicator
 
@@ -44,6 +49,12 @@ fun CharacterDetailScreen(
     viewModel: CharacterDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(viewModel, snackbarHostState) {
+        viewModel.errorEvents.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
     Box(Modifier.fillMaxSize()) {
         when (val current = state) {
             CharacterDetailUiState.Loading -> Column(
@@ -58,6 +69,7 @@ fun CharacterDetailScreen(
             is CharacterDetailUiState.Success -> CharacterContent(
                 current,
                 onCharacterClick = onCharacterClick,
+                onFavoriteClick = viewModel::toggleFavorite,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -97,6 +109,10 @@ fun CharacterDetailScreen(
                 }
             }
         )
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
@@ -104,6 +120,7 @@ fun CharacterDetailScreen(
 private fun CharacterContent(
     state: CharacterDetailUiState.Success,
     onCharacterClick: (Int) -> Unit,
+    onFavoriteClick: (Character) -> Unit,
     modifier: Modifier,
 ) {
     val character = state.character
@@ -171,13 +188,14 @@ private fun CharacterContent(
             )
             DetailRow("TYPE", character.type.ifBlank { "-" })
             DetailRow("EPISODES", character.episodeCount.toString())
-            state.actionError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             state.recommendationError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             if (state.similarCharacters.isNotEmpty()) {
                 CharacterCarousel(
                     title = "Characters like you",
                     characters = state.similarCharacters,
                     onCharacterClick = onCharacterClick,
+                    favoriteIds = state.favoriteIds,
+                    onFavoriteClick = onFavoriteClick,
                     modifier = Modifier.padding(top = 16.dp),
                 )
             }

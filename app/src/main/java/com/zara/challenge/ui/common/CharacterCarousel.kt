@@ -18,6 +18,8 @@ fun CharacterCarousel(
     title: String,
     characters: List<Character>,
     onCharacterClick: (Int) -> Unit,
+    favoriteIds: Set<Int>,
+    onFavoriteClick: (Character) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -28,6 +30,8 @@ fun CharacterCarousel(
                     character = character,
                     onClick = { onCharacterClick(character.id) },
                     modifier = Modifier.width(160.dp),
+                    isFavorite = character.id in favoriteIds,
+                    onFavoriteClick = { onFavoriteClick(character) },
                 )
             }
         }

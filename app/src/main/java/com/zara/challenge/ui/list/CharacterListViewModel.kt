@@ -131,8 +131,8 @@ class CharacterListViewModel @Inject constructor(
 
     fun onFavoriteClick(character: Character) {
         viewModelScope.launch {
-            toggleFavorite(character).onFailure { error ->
-                _errorEvents.trySend(error.userMessage()).getOrThrow()
+            toggleFavorite(character).onFailure {
+                _errorEvents.trySend("Couldn't update your favourites. Please try again.")
             }
         }
     }
