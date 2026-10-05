@@ -20,11 +20,11 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CharacterListViewModelTest {
@@ -91,7 +91,7 @@ class CharacterListViewModelTest {
         assertFalse(vm.uiState.value.isLoading)
         assertTrue(vm.uiState.value.hasLoadError)
         vm.errorEvents.test {
-            assertEquals("Request failed", awaitItem())
+            assertEquals("Something went wrong", awaitItem())
             expectNoEvents()
             cancelAndIgnoreRemainingEvents()
         }
@@ -131,7 +131,7 @@ class CharacterListViewModelTest {
         assertFalse(vm.uiState.value.isLoadingMore)
         assertFalse(vm.uiState.value.hasLoadError)
         vm.errorEvents.test {
-            assertEquals("Next page failed", awaitItem())
+            assertEquals("Something went wrong", awaitItem())
             expectNoEvents()
             cancelAndIgnoreRemainingEvents()
         }
