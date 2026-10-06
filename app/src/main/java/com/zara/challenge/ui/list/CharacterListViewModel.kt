@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 data class CharacterListUiState(
     val characters: List<Character> = emptyList(),
@@ -61,11 +62,13 @@ class CharacterListViewModel @Inject constructor(
     }
 
     fun onQueryChanged(query: String) {
+        listLoadJob?.cancel()
         cancelLoadMore()
+        requestId++
         _uiState.value = _uiState.value.copy(query = query)
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            delay(350)
+            delay(350.milliseconds)
             loadInitial()
         }
     }

@@ -244,4 +244,23 @@ class CharacterListViewModelPagingTest {
 
         assertEquals(listOf(morty), vm.uiState.value.characters)
     }
+
+    @Test
+    fun `in-flight initial load is discarded as soon as the query changes`() = runTest {
+        val slow = kotlinx.coroutines.CompletableDeferred<Result<CharacterPage>>()
+        coEvery { getCharacters(1, "", CharacterFilters()) } coAnswers { slow.await() }
+        coEvery { getCharacters(1, "morty", CharacterFilters()) } returns
+            Result.success(CharacterPage(listOf(morty), 1, 1))
+        val vm = CharacterListViewModel(getCharacters, observeFavoriteIds, toggleFavorite)
+        dispatcher.scheduler.runCurrent()
+
+        vm.onQueryChanged("morty")
+        slow.complete(Result.success(CharacterPage(listOf(rick), 1, 1)))
+        dispatcher.scheduler.advanceTimeBy(100)
+
+        assertTrue(vm.uiState.value.characters.isEmpty())
+
+        idle()
+        assertEquals(listOf(morty), vm.uiState.value.characters)
+    }
 }
