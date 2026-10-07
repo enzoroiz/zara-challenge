@@ -12,9 +12,11 @@ import com.zara.challenge.ui.list.CharacterListViewModel
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -129,13 +131,29 @@ class CharacterListViewModelTest {
         assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 
+    private fun stubSuspendUntilCancelled(
+        page: Int,
+        query: String = "",
+        filters: CharacterFilters = CharacterFilters(),
+    ): CompletableDeferred<Unit> {
+        val observed = CompletableDeferred<Unit>()
+        coEvery { useCase(page, query, filters) } coAnswers {
+            try {
+                awaitCancellation()
+            } catch (e: CancellationException) {
+                observed.complete(Unit)
+                throw e
+            }
+        }
+        return observed
+    }
+
     @Test
     fun `changing the query cancels an in-flight load more`() = runTest {
         val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
-        val pending = CompletableDeferred<Result<CharacterPage>>()
         coEvery { useCase(1, "", CharacterFilters()) } returns
             Result.success(CharacterPage(listOf(rick), 1, 2))
-        coEvery { useCase(2, "", CharacterFilters()) } coAnswers { pending.await() }
+        val cancellationObserved = stubSuspendUntilCancelled(2)
         coEvery { useCase(1, "morty", CharacterFilters()) } returns
             Result.success(CharacterPage(emptyList(), 1, 1))
 
@@ -144,15 +162,73 @@ class CharacterListViewModelTest {
         vm.loadMore()
         dispatcher.scheduler.runCurrent()
         assertTrue(vm.uiState.value.isLoadingMore)
+        assertFalse(cancellationObserved.isCompleted)
 
         vm.onQueryChanged("morty")
-        assertFalse(vm.uiState.value.isLoadingMore)
-        assertTrue(pending.isCancelled || !pending.isCompleted)
         dispatcher.scheduler.advanceUntilIdle()
 
-        pending.complete(Result.success(CharacterPage(listOf(rick), 2, 2)))
-        dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(cancellationObserved.isCompleted)
+        assertFalse(vm.uiState.value.isLoadingMore)
         assertTrue(vm.uiState.value.characters.isEmpty())
+    }
+
+    @Test
+    fun `changing the query cancels an in-flight initial load`() = runTest {
+        val cancellationObserved = stubSuspendUntilCancelled(1)
+        coEvery { useCase(1, "morty", CharacterFilters()) } returns
+            Result.success(CharacterPage(emptyList(), 1, 1))
+
+        val vm = CharacterListViewModel(useCase, observeFavoriteIds, toggleFavorite)
+        dispatcher.scheduler.runCurrent()
+        assertTrue(vm.uiState.value.isLoading)
+        assertFalse(cancellationObserved.isCompleted)
+
+        vm.onQueryChanged("morty")
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(cancellationObserved.isCompleted)
+        assertFalse(vm.uiState.value.isLoading)
+    }
+
+    @Test
+    fun `changing filters cancels an in-flight initial load`() = runTest {
+        val filters = CharacterFilters(status = "alive")
+        val cancellationObserved = stubSuspendUntilCancelled(1)
+        coEvery { useCase(1, "", filters) } returns
+            Result.success(CharacterPage(emptyList(), 1, 1))
+
+        val vm = CharacterListViewModel(useCase, observeFavoriteIds, toggleFavorite)
+        dispatcher.scheduler.runCurrent()
+        assertFalse(cancellationObserved.isCompleted)
+
+        vm.onFiltersChanged(filters)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(cancellationObserved.isCompleted)
+        assertFalse(vm.uiState.value.isLoading)
+    }
+
+    @Test
+    fun `changing filters cancels an in-flight load more`() = runTest {
+        val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
+        val filters = CharacterFilters(status = "alive")
+        coEvery { useCase(1, "", CharacterFilters()) } returns
+            Result.success(CharacterPage(listOf(rick), 1, 2))
+        val cancellationObserved = stubSuspendUntilCancelled(2)
+        coEvery { useCase(1, "", filters) } returns
+            Result.success(CharacterPage(emptyList(), 1, 1))
+
+        val vm = CharacterListViewModel(useCase, observeFavoriteIds, toggleFavorite)
+        dispatcher.scheduler.advanceUntilIdle()
+        vm.loadMore()
+        dispatcher.scheduler.runCurrent()
+        assertFalse(cancellationObserved.isCompleted)
+
+        vm.onFiltersChanged(filters)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(cancellationObserved.isCompleted)
+        assertFalse(vm.uiState.value.isLoadingMore)
     }
 
     @Test
