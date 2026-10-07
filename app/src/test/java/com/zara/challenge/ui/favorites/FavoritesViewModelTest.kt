@@ -68,18 +68,19 @@ class FavoritesViewModelTest {
     }
 
     @Test
-    fun `observation failure exposes the error message`() = runTest {
+    fun `observation failure exposes a generic error without leaking the message`() = runTest {
         every { observeFavorites() } returns flow { throw IllegalStateException("db") }
 
         val vm = FavoritesViewModel(observeFavorites, toggleFavorite)
         dispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals(UiText.Plain("db"), vm.uiState.value.error)
+        assertEquals(UiText.Res(R.string.favorites_load_error), vm.uiState.value.error)
         assertFalse(vm.uiState.value.isLoading)
+        assertTrue(vm.uiState.value.characters.isEmpty())
     }
 
     @Test
-    fun `observation failure without a message uses a default`() = runTest {
+    fun `observation failure without a message uses the same generic error`() = runTest {
         every { observeFavorites() } returns flow { throw RuntimeException() }
 
         val vm = FavoritesViewModel(observeFavorites, toggleFavorite)

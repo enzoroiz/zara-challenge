@@ -1,5 +1,6 @@
 package com.zara.challenge
 
+import android.util.Log
 import com.zara.challenge.data.local.CharacterDao
 import com.zara.challenge.data.local.CharacterEntity
 import com.zara.challenge.data.remote.ZaraChallengeApi
@@ -13,6 +14,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import java.io.IOException
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -22,6 +25,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import retrofit2.HttpException
 import retrofit2.Response
@@ -31,6 +36,15 @@ class CharacterRepositoryImplTest {
     private val dao = mockk<CharacterDao>(relaxed = true)
     private val repository = CharacterRepositoryImpl(api, dao)
     private val offline = IOException("offline")
+
+    @Before
+    fun mockAndroidLog() {
+        mockkStatic(Log::class)
+        every { Log.w(any<String>(), any<String>(), any<Throwable>()) } returns 0
+    }
+
+    @After
+    fun unmockAndroidLog() = unmockkStatic(Log::class)
 
     private fun http(code: Int) = HttpException(Response.error<Any>(code, "".toResponseBody()))
 
@@ -197,13 +211,17 @@ class CharacterRepositoryImplTest {
     }
 
     @Test
-    fun `cache write failure falls back to cached data`() = runTest {
+    fun `cache write failure still returns the network result`() = runTest {
         coEvery { api.getCharacters(any(), any(), any(), any()) } returns
-            CharacterPageDto(PageInfoDto(1, 1, null, null), listOf(testDto()))
+            CharacterPageDto(PageInfoDto(1, 3, null, null), listOf(testDto()))
         coEvery { dao.upsertAll(any()) } throws IllegalStateException("disk full")
-        coEvery { dao.searchCharacters(any(), any(), any()) } returns listOf(testEntity())
 
-        assertTrue(repository.getCharacters(1, "", CharacterFilters()).getOrThrow().isFromCache)
+        val page = repository.getCharacters(1, "", CharacterFilters()).getOrThrow()
+
+        assertFalse(page.isFromCache)
+        assertEquals(listOf(testCharacter()), page.characters)
+        assertEquals(3, page.totalPages)
+        coVerify(exactly = 0) { dao.searchCharacters(any(), any(), any()) }
     }
 
     @Test
