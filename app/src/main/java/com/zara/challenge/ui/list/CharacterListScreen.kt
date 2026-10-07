@@ -1,5 +1,8 @@
 package com.zara.challenge.ui.list
 
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
+import com.zara.challenge.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -65,9 +68,10 @@ fun CharacterListScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(viewModel, snackbarHostState) {
+    val context = LocalContext.current
+    LaunchedEffect(viewModel, snackbarHostState, context) {
         viewModel.errorEvents.collect { message ->
-            snackbarHostState.showSnackbar(message)
+            snackbarHostState.showSnackbar(message.asString(context))
         }
     }
     var showFilters by remember { mutableStateOf(false) }
@@ -85,16 +89,16 @@ fun CharacterListScreen(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
-                    title = { Text("RICK & MORTY") },
+                    title = { Text(stringResource(R.string.app_title)) },
                     actions = {
                         IconButton(onClick = { showFilters = true }) {
                             Box {
                                 Icon(
                                     imageVector = Icons.Outlined.Tune,
                                     contentDescription = if (activeFilterCount > 0) {
-                                        "Filter characters, $activeFilterCount active"
+                                        stringResource(R.string.filter_characters_active, activeFilterCount)
                                     } else {
-                                        "Filter characters"
+                                        stringResource(R.string.filter_characters)
                                     },
                                     tint = Color.Black,
                                 )
@@ -126,7 +130,7 @@ fun CharacterListScreen(
                     value = state.query,
                     onValueChange = viewModel::onQueryChanged,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    placeholder = { Text("Search characters") },
+                    placeholder = { Text(stringResource(R.string.search_characters)) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     singleLine = true,
                 )
@@ -176,7 +180,7 @@ fun CharacterListScreen(
                                                         strokeWidth = 2.dp,
                                                     )
                                                 } else {
-                                                    Text("LOAD MORE")
+                                                    Text(stringResource(R.string.load_more))
                                                 }
                                             }
                                         }
@@ -231,7 +235,7 @@ private fun LoadingBox() = Box(Modifier.fillMaxSize(), contentAlignment = Alignm
 
 @Composable
 private fun EmptyBox() = Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-    Text("No characters found")
+    Text(stringResource(R.string.no_characters))
 }
 
 @Composable
@@ -241,7 +245,7 @@ private fun ErrorBox(retry: () -> Unit) =
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("Unable to load characters")
+        Text(stringResource(R.string.load_characters_error))
         OutlinedButton(
             onClick = { retry() },
             modifier = Modifier
@@ -253,6 +257,6 @@ private fun ErrorBox(retry: () -> Unit) =
                 contentColor = Color.Black,
             ),
         ) {
-            Text("RETRY")
+            Text(stringResource(R.string.retry))
         }
     }

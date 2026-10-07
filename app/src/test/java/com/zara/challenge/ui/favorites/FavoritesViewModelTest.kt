@@ -1,5 +1,7 @@
 package com.zara.challenge.ui.favorites
 
+import com.zara.challenge.ui.common.UiText
+import com.zara.challenge.R
 import com.zara.challenge.domain.usecase.ObserveFavoritesUseCase
 import com.zara.challenge.domain.usecase.ToggleFavoriteUseCase
 import com.zara.challenge.testCharacter
@@ -72,7 +74,7 @@ class FavoritesViewModelTest {
         val vm = FavoritesViewModel(observeFavorites, toggleFavorite)
         dispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals("db", vm.uiState.value.error)
+        assertEquals(UiText.Plain("db"), vm.uiState.value.error)
         assertFalse(vm.uiState.value.isLoading)
     }
 
@@ -83,7 +85,7 @@ class FavoritesViewModelTest {
         val vm = FavoritesViewModel(observeFavorites, toggleFavorite)
         dispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals("Unable to load favourites", vm.uiState.value.error)
+        assertEquals(UiText.Res(R.string.favorites_load_error), vm.uiState.value.error)
     }
 
     @Test
@@ -109,7 +111,7 @@ class FavoritesViewModelTest {
         dispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(
-            "Couldn't update your favourites. Please try again.",
+            UiText.Res(R.string.favorites_update_error),
             vm.errorEvents.first(),
         )
     }

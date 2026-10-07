@@ -1,5 +1,7 @@
 package com.zara.challenge.ui.navigation
 
+import androidx.compose.ui.res.stringResource
+import com.zara.challenge.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.material.icons.Icons
@@ -39,7 +41,9 @@ fun AppNavHost() {
             if (currentRoute in topLevelRoutes) {
                 NavigationBar {
                     topLevelRoutes.forEach { route ->
-                        val label = if (route == "characters") "Characters" else "Favourites"
+                        val label = stringResource(
+                            if (route == "characters") R.string.nav_characters else R.string.nav_favourites,
+                        )
                         NavigationBarItem(
                             selected = currentRoute == route,
                             onClick = {

@@ -1,5 +1,8 @@
 package com.zara.challenge.ui.favorites
 
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
+import com.zara.challenge.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,19 +44,20 @@ fun FavoritesScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(viewModel, snackbarHostState) {
+    val context = LocalContext.current
+    LaunchedEffect(viewModel, snackbarHostState, context) {
         viewModel.errorEvents.collect { message ->
-            snackbarHostState.showSnackbar(message)
+            snackbarHostState.showSnackbar(message.asString(context))
         }
     }
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Your favourites") },
+                title = { Text(stringResource(R.string.favorites_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -62,12 +66,12 @@ fun FavoritesScreen(
         when {
             state.isLoading -> Centered(Modifier.padding(padding)) { CircularProgressIndicator() }
             state.error != null && state.characters.isEmpty() ->
-                Centered(Modifier.padding(padding)) { Text(state.error!!) }
+                Centered(Modifier.padding(padding)) { Text(state.error!!.asString()) }
             state.characters.isEmpty() ->
-                Centered(Modifier.padding(padding)) { Text("No favourites yet") }
+                Centered(Modifier.padding(padding)) { Text(stringResource(R.string.favorites_empty)) }
             else -> Column(Modifier.fillMaxSize().padding(padding)) {
                 state.error?.let {
-                    Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.error)
+                    Text(it.asString(), color = androidx.compose.material3.MaterialTheme.colorScheme.error)
                 }
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),

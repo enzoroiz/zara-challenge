@@ -1,5 +1,7 @@
 package com.zara.challenge
 
+import com.zara.challenge.ui.common.UiText
+import com.zara.challenge.R
 import androidx.lifecycle.SavedStateHandle
 import com.zara.challenge.domain.usecase.GetCharacterUseCase
 import com.zara.challenge.domain.usecase.GetSimilarCharactersUseCase
@@ -188,7 +190,7 @@ class CharacterDetailViewModelStateTest {
         advanceUntilIdle()
 
         assertEquals(
-            "Couldn't update your favourites. Please try again.",
+            UiText.Res(R.string.favorites_update_error),
             vm.errorEvents.first(),
         )
         assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })

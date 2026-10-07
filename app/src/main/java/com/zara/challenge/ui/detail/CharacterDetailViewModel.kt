@@ -1,5 +1,7 @@
 package com.zara.challenge.ui.detail
 
+import com.zara.challenge.ui.common.UiText
+import com.zara.challenge.R
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,7 +41,7 @@ class CharacterDetailViewModel @Inject constructor(
     private val id: Int = checkNotNull(savedStateHandle["characterId"])
     private val _uiState = MutableStateFlow<CharacterDetailUiState>(CharacterDetailUiState.Loading)
     val uiState: StateFlow<CharacterDetailUiState> = _uiState.asStateFlow()
-    private val _errorEvents = Channel<String>(Channel.BUFFERED)
+    private val _errorEvents = Channel<UiText>(Channel.BUFFERED)
     val errorEvents = _errorEvents.receiveAsFlow()
     private var favoriteIds: Set<Int> = emptySet()
 
@@ -83,7 +85,7 @@ class CharacterDetailViewModel @Inject constructor(
     fun toggleFavorite(character: Character) {
         viewModelScope.launch {
             toggleFavoriteUseCase(character).onFailure {
-                _errorEvents.trySend("Couldn't update your favourites. Please try again.")
+                _errorEvents.trySend(UiText.Res(R.string.favorites_update_error))
             }
         }
     }

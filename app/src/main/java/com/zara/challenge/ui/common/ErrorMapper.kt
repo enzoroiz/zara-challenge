@@ -1,17 +1,18 @@
 package com.zara.challenge.ui.common
 
+import com.zara.challenge.R
 import retrofit2.HttpException
 import java.io.IOException
 
-private const val GENERIC_ERROR = "Something went wrong"
-
-fun Throwable.toUserMessage(): String = when (this) {
-    is HttpException -> when (code()) {
-        404 -> "Unable to fetch"
-        429 -> "Too many requests. Please try again later."
-        in 500..599 -> "Something went wrong on our side. Please try again later."
-        else -> GENERIC_ERROR
-    }
-    is IOException -> "Check your connection"
-    else -> GENERIC_ERROR
-}
+fun Throwable.toUserMessage(): UiText = UiText.Res(
+    when (this) {
+        is HttpException -> when (code()) {
+            404 -> R.string.error_not_found
+            429 -> R.string.error_too_many_requests
+            in 500..599 -> R.string.error_server
+            else -> R.string.error_generic
+        }
+        is IOException -> R.string.error_connection
+        else -> R.string.error_generic
+    },
+)

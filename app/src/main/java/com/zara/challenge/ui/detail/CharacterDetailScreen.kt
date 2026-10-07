@@ -1,5 +1,8 @@
 package com.zara.challenge.ui.detail
 
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
+import com.zara.challenge.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,16 +59,17 @@ fun CharacterDetailScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(viewModel, snackbarHostState) {
+    val context = LocalContext.current
+    LaunchedEffect(viewModel, snackbarHostState, context) {
         viewModel.errorEvents.collect { message ->
-            snackbarHostState.showSnackbar(message)
+            snackbarHostState.showSnackbar(message.asString(context))
         }
     }
     LaunchedEffect(state) {
         if (state == CharacterDetailUiState.Unavailable) {
             launch {
                 snackbarHostState.showSnackbar(
-                    message = "Couldn't retrieve the character information",
+                    message = context.getString(R.string.character_unavailable),
                     duration = SnackbarDuration.Indefinite,
                 )
             }
@@ -98,7 +102,7 @@ fun CharacterDetailScreen(
             ),
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                 }
             },
             actions = {
@@ -112,9 +116,9 @@ fun CharacterDetailScreen(
                                 Icons.Outlined.FavoriteBorder
                             },
                             contentDescription = if (characterState.isFavorite) {
-                                "Remove from favorites"
+                                stringResource(R.string.remove_from_favorites)
                             } else {
-                                "Add to favorites"
+                                stringResource(R.string.add_to_favorites)
                             },
                             tint = if (characterState.isFavorite) {
                                 Color.Red
@@ -162,18 +166,18 @@ private fun CharacterUnavailableContent(modifier: Modifier) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                LocationInfo(title = "ORIGIN", value = "-", modifier = Modifier.weight(1f))
-                LocationInfo(title = "LOCATION", value = "-", modifier = Modifier.weight(1f))
+                LocationInfo(title = stringResource(R.string.detail_origin), value = "-", modifier = Modifier.weight(1f))
+                LocationInfo(title = stringResource(R.string.detail_location), value = "-", modifier = Modifier.weight(1f))
             }
             HorizontalDivider(color = Color(0xFFE5E5E5), thickness = 1.dp)
             Text(
-                "CHARACTER DETAILS",
+                stringResource(R.string.detail_section_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Black,
                 fontWeight = FontWeight.Normal,
             )
-            DetailRow("TYPE", "-")
-            DetailRow("EPISODES", "-")
+            DetailRow(stringResource(R.string.detail_type), "-")
+            DetailRow(stringResource(R.string.detail_episodes), "-")
         }
     }
 }
@@ -234,28 +238,28 @@ private fun CharacterContent(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 LocationInfo(
-                    title = "ORIGIN",
+                    title = stringResource(R.string.detail_origin),
                     value = character.originName,
                     modifier = Modifier.weight(1f),
                 )
                 LocationInfo(
-                    title = "LOCATION",
+                    title = stringResource(R.string.detail_location),
                     value = character.locationName,
                     modifier = Modifier.weight(1f),
                 )
             }
             HorizontalDivider(color = Color(0xFFE5E5E5), thickness = 1.dp)
             Text(
-                "CHARACTER DETAILS",
+                stringResource(R.string.detail_section_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Black,
                 fontWeight = FontWeight.Normal,
             )
-            DetailRow("TYPE", character.type.ifBlank { "-" })
-            DetailRow("EPISODES", character.episodeCount.toString())
+            DetailRow(stringResource(R.string.detail_type), character.type.ifBlank { "-" })
+            DetailRow(stringResource(R.string.detail_episodes), character.episodeCount.toString())
             if (state.similarCharacters.isNotEmpty()) {
                 CharacterCarousel(
-                    title = "Characters like you",
+                    title = stringResource(R.string.similar_characters),
                     characters = state.similarCharacters,
                     onCharacterClick = onCharacterClick,
                     favoriteIds = state.favoriteIds,

@@ -1,5 +1,7 @@
 package com.zara.challenge.ui.common
 
+import androidx.compose.ui.res.stringResource
+import com.zara.challenge.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -75,7 +77,9 @@ fun CharacterCard(
                             } else {
                                 Icons.Outlined.FavoriteBorder
                             },
-                            contentDescription = if (isFavorite == true) "Remove from favorites" else "Add to favorites",
+                            contentDescription = stringResource(
+                                if (isFavorite == true) R.string.remove_from_favorites else R.string.add_to_favorites,
+                            ),
                             tint = if (isFavorite == true) Color.Red else Color.White,
                         )
                     }

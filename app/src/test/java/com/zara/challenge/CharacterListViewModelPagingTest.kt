@@ -1,5 +1,7 @@
 package com.zara.challenge
 
+import com.zara.challenge.ui.common.UiText
+import com.zara.challenge.R
 import com.zara.challenge.domain.model.CharacterFilters
 import com.zara.challenge.domain.model.CharacterPage
 import com.zara.challenge.domain.usecase.GetCharactersUseCase
@@ -167,7 +169,7 @@ class CharacterListViewModelPagingTest {
 
         val vm = createViewModel()
 
-        assertEquals("Too many requests. Please try again later.", vm.errorEvents.first())
+        assertEquals(UiText.Res(R.string.error_too_many_requests), vm.errorEvents.first())
         assertTrue(vm.uiState.value.hasLoadError)
     }
 
@@ -207,7 +209,7 @@ class CharacterListViewModelPagingTest {
         idle()
 
         assertEquals(
-            "Couldn't update your favourites. Please try again.",
+            UiText.Res(R.string.favorites_update_error),
             vm.errorEvents.first(),
         )
     }
@@ -222,8 +224,8 @@ class CharacterListViewModelPagingTest {
         vm.loadInitial(); idle()
         vm.loadInitial(); idle()
 
-        assertEquals("You're seeing offline results", vm.errorEvents.first())
-        assertEquals("You're seeing offline results", vm.errorEvents.first())
+        assertEquals(UiText.Res(R.string.offline_results), vm.errorEvents.first())
+        assertEquals(UiText.Res(R.string.offline_results), vm.errorEvents.first())
         assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 

@@ -1,5 +1,7 @@
 package com.zara.challenge.ui.list
 
+import androidx.compose.ui.res.stringResource
+import com.zara.challenge.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,18 +55,23 @@ fun CharacterFilterMenu(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    "Filters",
+                    stringResource(R.string.filters_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color.Black,
                 )
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.Check, contentDescription = "Close filters")
+                    Icon(Icons.Default.Check, contentDescription = stringResource(R.string.close_filters))
                 }
             }
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
             FilterSection(
-                title = "Gender",
-                options = listOf("female", "male", "genderless", "unknown"),
+                title = stringResource(R.string.filter_gender),
+                options = listOf(
+                    "female" to R.string.gender_female,
+                    "male" to R.string.gender_male,
+                    "genderless" to R.string.gender_genderless,
+                    "unknown" to R.string.option_unknown,
+                ),
                 selection = filters.gender,
                 onSelected = { selected ->
                     onFilterChanged(filters.copy(gender = selected.takeUnless { it == filters.gender }))
@@ -72,8 +79,12 @@ fun CharacterFilterMenu(
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
             FilterSection(
-                title = "Status",
-                options = listOf("alive", "dead", "unknown"),
+                title = stringResource(R.string.filter_status),
+                options = listOf(
+                    "alive" to R.string.status_alive,
+                    "dead" to R.string.status_dead,
+                    "unknown" to R.string.option_unknown,
+                ),
                 selection = filters.status,
                 onSelected = { selected ->
                     onFilterChanged(filters.copy(status = selected.takeUnless { it == filters.status }))
@@ -90,7 +101,7 @@ fun CharacterFilterMenu(
                     contentColor = Color.Black,
                 ),
             ) {
-                Text("RESET FILTERS")
+                Text(stringResource(R.string.reset_filters))
             }
         }
     }
@@ -99,7 +110,7 @@ fun CharacterFilterMenu(
 @Composable
 private fun FilterSection(
     title: String,
-    options: List<String>,
+    options: List<Pair<String, Int>>,
     selection: String?,
     onSelected: (String) -> Unit,
 ) {
@@ -111,7 +122,7 @@ private fun FilterSection(
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
         )
-        options.forEach { option ->
+        options.forEach { (option, labelRes) ->
             val selected = option == selection
             Row(
                 modifier = Modifier
@@ -133,14 +144,14 @@ private fun FilterSection(
                 if (selected) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Selected",
+                        contentDescription = stringResource(R.string.selected),
                         tint = Color.Black,
                     )
                 } else {
                     Spacer(Modifier.padding(start = 24.dp))
                 }
                 Text(
-                    option.replaceFirstChar { it.uppercase() },
+                    stringResource(labelRes),
                     color = Color.Black,
                     style = MaterialTheme.typography.bodyMedium,
                 )

@@ -1,5 +1,7 @@
 package com.zara.challenge.ui.favorites
 
+import com.zara.challenge.ui.common.UiText
+import com.zara.challenge.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zara.challenge.domain.model.Character
@@ -17,7 +19,7 @@ import kotlinx.coroutines.launch
 data class FavoritesUiState(
     val characters: List<Character> = emptyList(),
     val isLoading: Boolean = true,
-    val error: String? = null,
+    val error: UiText? = null,
 )
 
 @HiltViewModel
@@ -27,7 +29,7 @@ class FavoritesViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(FavoritesUiState())
     val uiState = _uiState.asStateFlow()
-    private val _errorEvents = Channel<String>(Channel.BUFFERED)
+    private val _errorEvents = Channel<UiText>(Channel.BUFFERED)
     val errorEvents = _errorEvents.receiveAsFlow()
 
     init {
@@ -36,7 +38,8 @@ class FavoritesViewModel @Inject constructor(
                 .catch { error ->
                     _uiState.value = FavoritesUiState(
                         isLoading = false,
-                        error = error.message ?: "Unable to load favourites",
+                        error = error.message?.let(UiText::Plain)
+                            ?: UiText.Res(R.string.favorites_load_error),
                     )
                 }
                 .collect { characters ->
@@ -48,7 +51,7 @@ class FavoritesViewModel @Inject constructor(
     fun removeFavorite(character: Character) {
         viewModelScope.launch {
             toggleFavorite(character).onFailure {
-                _errorEvents.trySend("Couldn't update your favourites. Please try again.")
+                _errorEvents.trySend(UiText.Res(R.string.favorites_update_error))
             }
         }
     }

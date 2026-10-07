@@ -1,5 +1,7 @@
 package com.zara.challenge.ui.list
 
+import com.zara.challenge.ui.common.UiText
+import com.zara.challenge.R
 import com.zara.challenge.ui.common.toUserMessage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -40,7 +42,7 @@ class CharacterListViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CharacterListUiState())
     val uiState: StateFlow<CharacterListUiState> = _uiState.asStateFlow()
-    private val _errorEvents = Channel<String>(Channel.BUFFERED)
+    private val _errorEvents = Channel<UiText>(Channel.BUFFERED)
     val errorEvents = _errorEvents.receiveAsFlow()
 
     private var currentPage = 0
@@ -152,7 +154,7 @@ class CharacterListViewModel @Inject constructor(
 
     private fun notifyIfOffline(isFromCache: Boolean) {
         if (isFromCache && !isOffline) {
-            _errorEvents.trySend("You're seeing offline results")
+            _errorEvents.trySend(UiText.Res(R.string.offline_results))
         }
         isOffline = isFromCache
     }
@@ -160,7 +162,7 @@ class CharacterListViewModel @Inject constructor(
     fun onFavoriteClick(character: Character) {
         viewModelScope.launch {
             toggleFavorite(character).onFailure {
-                _errorEvents.trySend("Couldn't update your favourites. Please try again.")
+                _errorEvents.trySend(UiText.Res(R.string.favorites_update_error))
             }
         }
     }

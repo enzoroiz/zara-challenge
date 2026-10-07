@@ -1,5 +1,7 @@
 package com.zara.challenge
 
+import com.zara.challenge.ui.common.UiText
+import com.zara.challenge.R
 import com.zara.challenge.domain.model.Character
 import com.zara.challenge.domain.model.CharacterFilters
 import com.zara.challenge.domain.model.CharacterPage
@@ -86,7 +88,7 @@ class CharacterListViewModelTest {
 
         assertFalse(vm.uiState.value.isLoading)
         assertTrue(vm.uiState.value.hasLoadError)
-        assertEquals("Something went wrong", vm.errorEvents.first())
+        assertEquals(UiText.Res(R.string.error_generic), vm.errorEvents.first())
         assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 
@@ -123,7 +125,7 @@ class CharacterListViewModelTest {
         assertEquals(listOf(rick), vm.uiState.value.characters)
         assertFalse(vm.uiState.value.isLoadingMore)
         assertFalse(vm.uiState.value.hasLoadError)
-        assertEquals("Something went wrong", vm.errorEvents.first())
+        assertEquals(UiText.Res(R.string.error_generic), vm.errorEvents.first())
         assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 
@@ -164,7 +166,7 @@ class CharacterListViewModelTest {
         vm.loadInitial()
         dispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals("You're seeing offline results", vm.errorEvents.first())
+        assertEquals(UiText.Res(R.string.offline_results), vm.errorEvents.first())
         assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
     }
 }
