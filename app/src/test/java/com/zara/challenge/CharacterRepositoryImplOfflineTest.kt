@@ -33,7 +33,7 @@ class CharacterRepositoryImplOfflineTest {
 
     @Test
     fun `blank query is not sent to the API and page metadata is returned`() = runTest {
-        coEvery { api.getCharacters(3, null, null, null, null) } returns
+        coEvery { api.getCharacters(3, null, null, null) } returns
             CharacterPageDto(PageInfoDto(40, 7, null, null), listOf(testDto()))
 
         val page = repository.getCharacters(3, "   ", CharacterFilters()).getOrThrow()
@@ -45,7 +45,7 @@ class CharacterRepositoryImplOfflineTest {
 
     @Test
     fun `first page falls back to the cache when the request fails`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any(), any()) } throws offline
+        coEvery { api.getCharacters(any(), any(), any(), any()) } throws offline
         coEvery { dao.searchCharacters("rick", "alive", "male") } returns listOf(testEntity())
 
         val page = repository.getCharacters(
@@ -60,7 +60,7 @@ class CharacterRepositoryImplOfflineTest {
 
     @Test
     fun `first page failure with an empty cache returns the original error`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any(), any()) } throws offline
+        coEvery { api.getCharacters(any(), any(), any(), any()) } throws offline
         coEvery { dao.searchCharacters(any(), any(), any()) } returns emptyList()
 
         val result = repository.getCharacters(1, "", CharacterFilters())
@@ -70,7 +70,7 @@ class CharacterRepositoryImplOfflineTest {
 
     @Test
     fun `later pages never fall back to the cache`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any(), any()) } throws offline
+        coEvery { api.getCharacters(any(), any(), any(), any()) } throws offline
 
         val result = repository.getCharacters(2, "", CharacterFilters())
 
@@ -80,7 +80,7 @@ class CharacterRepositoryImplOfflineTest {
 
     @Test
     fun `404 on a later page is an empty last page`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any(), any()) } throws http(404)
+        coEvery { api.getCharacters(any(), any(), any(), any()) } throws http(404)
 
         val page = repository.getCharacters(2, "zzz", CharacterFilters()).getOrThrow()
 
@@ -91,7 +91,7 @@ class CharacterRepositoryImplOfflineTest {
 
     @Test
     fun `non 404 http errors fall back to the cache on the first page`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any(), any()) } throws http(500)
+        coEvery { api.getCharacters(any(), any(), any(), any()) } throws http(500)
         coEvery { dao.searchCharacters("", null, null) } returns listOf(testEntity())
 
         assertTrue(repository.getCharacters(1, "", CharacterFilters()).getOrThrow().isFromCache)
@@ -100,7 +100,7 @@ class CharacterRepositoryImplOfflineTest {
     @Test
     fun `non 404 http errors are reported when there is no cache`() = runTest {
         val error = http(429)
-        coEvery { api.getCharacters(any(), any(), any(), any(), any()) } throws error
+        coEvery { api.getCharacters(any(), any(), any(), any()) } throws error
         coEvery { dao.searchCharacters(any(), any(), any()) } returns emptyList()
 
         assertSame(error, repository.getCharacters(1, "", CharacterFilters()).exceptionOrNull())
@@ -108,7 +108,7 @@ class CharacterRepositoryImplOfflineTest {
 
     @Test
     fun `successful fetch is cached`() = runTest {
-        coEvery { api.getCharacters(1, null, null, null, null) } returns
+        coEvery { api.getCharacters(1, null, null, null) } returns
             CharacterPageDto(PageInfoDto(2, 1, null, null), listOf(testDto(1), testDto(2, "Morty")))
 
         repository.getCharacters(1, "", CharacterFilters())
@@ -118,7 +118,7 @@ class CharacterRepositoryImplOfflineTest {
 
     @Test
     fun `cache write failure falls back to cached data`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any(), any()) } returns
+        coEvery { api.getCharacters(any(), any(), any(), any()) } returns
             CharacterPageDto(PageInfoDto(1, 1, null, null), listOf(testDto()))
         coEvery { dao.upsertAll(any()) } throws IllegalStateException("disk full")
         coEvery { dao.searchCharacters(any(), any(), any()) } returns listOf(testEntity())

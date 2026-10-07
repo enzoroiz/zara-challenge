@@ -32,7 +32,6 @@ class CharacterRepositoryImplTest {
                 page = 1,
                 name = "rick",
                 status = "alive",
-                type = null,
                 gender = "male",
             )
         } returns CharacterPageDto(PageInfoDto(1, 1, null, null), listOf(dto))
@@ -57,7 +56,6 @@ class CharacterRepositoryImplTest {
                 page = 1,
                 name = null,
                 status = null,
-                type = null,
                 gender = null,
             )
         } throws notFound
@@ -79,7 +77,7 @@ class CharacterRepositoryImplTest {
         assertEquals("Rick Sanchez", result.getOrThrow().name)
         coVerify { dao.getCharacter(1) }
         coVerify(exactly = 0) {
-            api.getCharacters(any(), any(), any(), any(), any())
+            api.getCharacters(any(), any(), any(), any())
         }
     }
 

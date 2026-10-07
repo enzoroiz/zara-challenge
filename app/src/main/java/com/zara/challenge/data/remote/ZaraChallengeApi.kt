@@ -10,7 +10,6 @@ interface ZaraChallengeApi {
         @Query("page") page: Int,
         @Query("name") name: String? = null,
         @Query("status") status: String? = null,
-        @Query("type") type: String? = null,
         @Query("gender") gender: String? = null,
     ): CharacterPageDto
 }
