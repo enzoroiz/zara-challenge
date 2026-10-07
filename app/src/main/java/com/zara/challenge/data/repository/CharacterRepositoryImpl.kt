@@ -51,11 +51,13 @@ class CharacterRepositoryImpl @Inject constructor(
             return Result.success(CharacterPage(emptyList(), page, 0))
         }
         if (page != 1) return Result.failure(error)
-        val cached = dao.searchCharacters(
-            query = query,
-            status = filters.status,
-            gender = filters.gender,
-        ).map { it.toDomain() }
+        val cached = runCatchingCancellable {
+            dao.searchCharacters(
+                query = query,
+                status = filters.status,
+                gender = filters.gender,
+            ).map { it.toDomain() }
+        }.getOrDefault(emptyList())
         return if (cached.isEmpty()) {
             Result.failure(error)
         } else {
