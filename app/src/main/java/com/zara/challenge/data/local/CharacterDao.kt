@@ -69,7 +69,7 @@ interface CharacterDao {
         """
         SELECT * FROM characters
         WHERE id != :characterId
-          AND lower(trim(substr(name, 1, instr(name || ' ', ' ') - 1))) = lower(:firstName)
+          AND lower(substr(trim(name), 1, instr(trim(name) || ' ', ' ') - 1)) = lower(:firstName)
         ORDER BY name COLLATE NOCASE
         LIMIT 5
         """,

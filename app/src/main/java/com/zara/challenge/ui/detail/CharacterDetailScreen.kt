@@ -344,7 +344,6 @@ private fun CharacterContentPreview() {
                 character = character(1, "Rick Sanchez"),
                 similarCharacters = listOf(character(2, "Rick Prime"), character(3, "Rick Jr.")),
                 favoriteIds = setOf(1),
-                isFavorite = true,
             ),
             onCharacterClick = {},
             onFavoriteClick = {},

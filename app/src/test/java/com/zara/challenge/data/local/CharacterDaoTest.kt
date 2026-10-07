@@ -174,6 +174,13 @@ class CharacterDaoTest {
     }
 
     @Test
+    fun `similar characters ignore leading whitespace in stored names`() = runTest {
+        dao.upsertAll(listOf(testEntity(1, "Rick Sanchez"), testEntity(2, "  Rick Prime")))
+
+        assertEquals(listOf(2), dao.findByFirstName("Rick", 1).map { it.id })
+    }
+
+    @Test
     fun `entity and domain mapping round trip`() {
         val entity = testEntity(5, "Summer Smith")
 

@@ -24,10 +24,11 @@ sealed interface CharacterDetailUiState {
     data object Unavailable : CharacterDetailUiState
     data class Success(
         val character: Character,
-        val isFavorite: Boolean = false,
         val favoriteIds: Set<Int> = emptySet(),
         val similarCharacters: List<Character> = emptyList(),
-    ) : CharacterDetailUiState
+    ) : CharacterDetailUiState {
+        val isFavorite: Boolean get() = character.id in favoriteIds
+    }
 }
 
 @HiltViewModel
@@ -53,7 +54,7 @@ class CharacterDetailViewModel @Inject constructor(
                 favoriteIds = ids
                 val current = _uiState.value as? CharacterDetailUiState.Success
                 if (current != null) {
-                    _uiState.value = current.copy(isFavorite = id in ids, favoriteIds = ids)
+                    _uiState.value = current.copy(favoriteIds = ids)
                 }
             }
         }
@@ -66,7 +67,6 @@ class CharacterDetailViewModel @Inject constructor(
         getCharacter(id).onSuccess { character ->
             _uiState.value = CharacterDetailUiState.Success(
                 character = character,
-                isFavorite = id in favoriteIds,
                 favoriteIds = favoriteIds,
             )
 
