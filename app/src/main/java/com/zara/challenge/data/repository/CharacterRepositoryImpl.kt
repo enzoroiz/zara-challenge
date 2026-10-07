@@ -9,10 +9,14 @@ import com.zara.challenge.domain.model.Character
 import com.zara.challenge.domain.model.CharacterFilters
 import com.zara.challenge.domain.model.CharacterPage
 import com.zara.challenge.domain.repository.CharacterRepository
+import android.util.Log
+import com.zara.challenge.data.remote.dto.CharacterPageDto
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import retrofit2.HttpException
 import javax.inject.Inject
+import kotlin.collections.map
 
 class CharacterRepositoryImpl @Inject constructor(
     private val api: ZaraChallengeApi,
@@ -30,7 +34,7 @@ class CharacterRepositoryImpl @Inject constructor(
             gender = filters.gender,
         )
         val characters = response.results.map { it.toDomain() }
-        dao.upsertAll(response.results.map { it.toEntity() })
+        upsertAll(response)
         CharacterPage(characters, page, response.info.pages)
     }.recoverCatching { error ->
         if (error is HttpException && error.code() == 404) {
@@ -69,4 +73,14 @@ class CharacterRepositoryImpl @Inject constructor(
                 dao.findByFirstName(firstName, character.id).map { it.toDomain() }
             }
         }
+
+    private suspend fun upsertAll(response: CharacterPageDto) {
+        try {
+            dao.upsertAll(response.results.map { it.toEntity() })
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w("CharacterRepository", "Cache write failed", e)
+        }
+    }
 }
