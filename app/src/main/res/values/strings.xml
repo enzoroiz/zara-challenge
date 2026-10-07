@@ -25,6 +25,7 @@
     <string name="filter_characters">Filter characters</string>
     <string name="filter_characters_active">Filter characters, %1$d active</string>
     <string name="search_characters">Search characters</string>
+    <string name="clear_search">Clear search</string>
     <string name="load_more">LOAD MORE</string>
     <string name="no_characters">No characters found</string>
     <string name="load_characters_error">Unable to load characters</string>
