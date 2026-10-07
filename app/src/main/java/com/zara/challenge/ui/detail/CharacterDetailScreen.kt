@@ -42,6 +42,7 @@ import coil3.compose.AsyncImage
 import com.zara.challenge.domain.model.Character
 import com.zara.challenge.ui.common.CharacterCarousel
 import com.zara.challenge.ui.common.CharacterStatusIndicator
+import com.zara.challenge.ui.common.ImagePlaceholder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
@@ -192,6 +193,9 @@ private fun CharacterContent(
         AsyncImage(
             model = character.image,
             contentDescription = character.name,
+            placeholder = ImagePlaceholder,
+            error = ImagePlaceholder,
+            fallback = ImagePlaceholder,
             modifier = Modifier.fillMaxWidth().aspectRatio(1f),
         )
         Column(

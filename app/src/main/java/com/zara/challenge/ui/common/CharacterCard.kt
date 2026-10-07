@@ -53,6 +53,9 @@ fun CharacterCard(
                     model = character.image,
                     contentDescription = character.name,
                     contentScale = ContentScale.Crop,
+                    placeholder = ImagePlaceholder,
+                    error = ImagePlaceholder,
+                    fallback = ImagePlaceholder,
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
