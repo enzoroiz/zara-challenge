@@ -58,7 +58,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.zara.challenge.domain.model.Character
 import com.zara.challenge.ui.common.CharacterCard
+import com.zara.challenge.ui.theme.ZaraChallengeTheme
+import androidx.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,82 +129,15 @@ fun CharacterListScreen(
                 )
             },
         ) { padding ->
-            Column(Modifier.fillMaxSize().padding(padding)) {
-                OutlinedTextField(
-                    value = state.query,
-                    onValueChange = viewModel::onQueryChanged,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    placeholder = { Text(stringResource(R.string.search_characters)) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    trailingIcon = {
-                        if (state.query.isNotEmpty()) {
-                            IconButton(onClick = { viewModel.onQueryChanged("") }) {
-                                Icon(
-                                    Icons.Default.Close,
-                                    contentDescription = stringResource(R.string.clear_search),
-                                )
-                            }
-                        }
-                    },
-                    singleLine = true,
-                )
-                Box(Modifier.weight(1f).fillMaxWidth()) {
-                    when {
-                        state.isLoading -> LoadingBox()
-                        state.hasLoadError && state.characters.isEmpty() ->
-                            ErrorBox { viewModel.retry() }
-                        state.characters.isEmpty() -> EmptyBox()
-                        else -> Column(Modifier.fillMaxSize()) {
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(2),
-                                modifier = Modifier.weight(1f),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                items(state.characters, key = { it.id }) { character ->
-                                    CharacterCard(
-                                        character = character,
-                                        onClick = { onCharacterClick(character.id) },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        isFavorite = character.id in state.favoriteIds,
-                                        onFavoriteClick = { viewModel.onFavoriteClick(character) },
-                                    )
-                                }
-                                if (!state.endReached) {
-                                    item(span = { GridItemSpan(maxLineSpan) }) {
-                                        Box(
-                                            Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                                            contentAlignment = Alignment.Center,
-                                        ) {
-                                            OutlinedButton(
-                                                onClick = viewModel::loadMore,
-                                                modifier = Modifier.fillMaxWidth(),
-                                                enabled = !state.isLoadingMore,
-                                                border = BorderStroke(1.dp, Color.Black),
-                                                colors = ButtonDefaults.outlinedButtonColors(
-                                                    containerColor = MaterialTheme.colorScheme.surface,
-                                                    contentColor = Color.Black,
-                                                ),
-                                            ) {
-                                                if (state.isLoadingMore) {
-                                                    CircularProgressIndicator(
-                                                        modifier = Modifier.size(20.dp),
-                                                        color = Color.Black,
-                                                        strokeWidth = 2.dp,
-                                                    )
-                                                } else {
-                                                    Text(stringResource(R.string.load_more))
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            CharacterListContent(
+                state = state,
+                onQueryChanged = viewModel::onQueryChanged,
+                onCharacterClick = onCharacterClick,
+                onFavoriteClick = viewModel::onFavoriteClick,
+                onLoadMore = viewModel::loadMore,
+                onRetry = viewModel::retry,
+                modifier = Modifier.padding(padding),
+            )
         }
         if (showFilters || menuProgress > 0f) {
             Box(Modifier.fillMaxSize()) {
@@ -240,6 +176,94 @@ fun CharacterListScreen(
 }
 
 @Composable
+private fun CharacterListContent(
+    state: CharacterListUiState,
+    onQueryChanged: (String) -> Unit,
+    onCharacterClick: (Int) -> Unit,
+    onFavoriteClick: (Character) -> Unit,
+    onLoadMore: () -> Unit,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier.fillMaxSize()) {
+        OutlinedTextField(
+            value = state.query,
+            onValueChange = onQueryChanged,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = { Text(stringResource(R.string.search_characters)) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            trailingIcon = {
+                if (state.query.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChanged("") }) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = stringResource(R.string.clear_search),
+                        )
+                    }
+                }
+            },
+            singleLine = true,
+        )
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            when {
+                state.isLoading -> LoadingBox()
+                state.hasLoadError && state.characters.isEmpty() ->
+                    ErrorBox(onRetry)
+                state.characters.isEmpty() -> EmptyBox()
+                else -> Column(Modifier.fillMaxSize()) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(state.characters, key = { it.id }) { character ->
+                            CharacterCard(
+                                character = character,
+                                onClick = { onCharacterClick(character.id) },
+                                modifier = Modifier.fillMaxWidth(),
+                                isFavorite = character.id in state.favoriteIds,
+                                onFavoriteClick = { onFavoriteClick(character) },
+                            )
+                        }
+                        if (!state.endReached) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                Box(
+                                    Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    OutlinedButton(
+                                        onClick = onLoadMore,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        enabled = !state.isLoadingMore,
+                                        border = BorderStroke(1.dp, Color.Black),
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            containerColor = MaterialTheme.colorScheme.surface,
+                                            contentColor = Color.Black,
+                                        ),
+                                    ) {
+                                        if (state.isLoadingMore) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(20.dp),
+                                                color = Color.Black,
+                                                strokeWidth = 2.dp,
+                                            )
+                                        } else {
+                                            Text(stringResource(R.string.load_more))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun LoadingBox() = Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
     CircularProgressIndicator()
 }
@@ -271,3 +295,28 @@ private fun ErrorBox(retry: () -> Unit) =
             Text(stringResource(R.string.retry))
         }
     }
+
+@Preview(showBackground = true)
+@Composable
+private fun CharacterListContentSuccessPreview() {
+    val characters = listOf(
+        Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth (C-137)", "Citadel of Ricks", "", 51, "2017-11-04"),
+        Character(2, "Morty Smith", "Alive", "Human", "", "Male", "Earth (C-137)", "Earth (Replacement Dimension)", "", 51, "2017-11-04"),
+        Character(3, "Summer Smith", "Alive", "Human", "", "Female", "Earth (Replacement Dimension)", "Earth (Replacement Dimension)", "", 42, "2017-11-04"),
+        Character(4, "Birdperson", "Dead", "Bird-Person", "", "Male", "Bird World", "Bird World", "", 10, "2017-11-04"),
+    )
+    ZaraChallengeTheme {
+        CharacterListContent(
+            state = CharacterListUiState(
+                characters = characters,
+                isLoading = false,
+                favoriteIds = setOf(1),
+            ),
+            onQueryChanged = {},
+            onCharacterClick = {},
+            onFavoriteClick = {},
+            onLoadMore = {},
+            onRetry = {},
+        )
+    }
+}

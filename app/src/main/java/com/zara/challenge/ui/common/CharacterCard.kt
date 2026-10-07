@@ -29,6 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.zara.challenge.ui.theme.ZaraChallengeTheme
 import coil3.compose.AsyncImage
 import com.zara.challenge.domain.model.Character
 
@@ -125,5 +127,30 @@ fun CharacterCard(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 200)
+@Composable
+private fun CharacterCardPreview() {
+    ZaraChallengeTheme {
+        CharacterCard(
+            character = Character(
+                id = 1,
+                name = "Rick Sanchez",
+                status = "Alive",
+                species = "Human",
+                type = "",
+                gender = "Male",
+                originName = "Earth (C-137)",
+                locationName = "Citadel of Ricks",
+                image = "",
+                episodeCount = 51,
+                created = "2017-11-04",
+            ),
+            onClick = {},
+            isFavorite = true,
+            onFavoriteClick = {},
+        )
     }
 }

@@ -41,6 +41,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.tooling.preview.Preview
+import com.zara.challenge.ui.theme.ZaraChallengeTheme
 import coil3.compose.AsyncImage
 import com.zara.challenge.domain.model.Character
 import com.zara.challenge.ui.common.CharacterCarousel
@@ -299,6 +301,37 @@ private fun DetailRow(label: String, value: String) {
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.bodyMedium,
             color = Color.Black,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CharacterContentPreview() {
+    fun character(id: Int, name: String) = Character(
+        id = id,
+        name = name,
+        status = "Alive",
+        species = "Human",
+        type = "",
+        gender = "Male",
+        originName = "Earth (C-137)",
+        locationName = "Citadel of Ricks",
+        image = "",
+        episodeCount = 51,
+        created = "2017-11-04",
+    )
+    ZaraChallengeTheme {
+        CharacterContent(
+            state = CharacterDetailUiState.Success(
+                character = character(1, "Rick Sanchez"),
+                similarCharacters = listOf(character(2, "Rick Prime"), character(3, "Rick Jr.")),
+                favoriteIds = setOf(1),
+                isFavorite = true,
+            ),
+            onCharacterClick = {},
+            onFavoriteClick = {},
+            modifier = Modifier,
         )
     }
 }
