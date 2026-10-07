@@ -33,7 +33,9 @@ class CharacterRepositoryImpl @Inject constructor(
             gender = filters.gender,
         )
         val characters = response.results.map { it.toDomain() }
+
         upsertAll(response)
+
         Result.success(CharacterPage(characters, page, response.info.pages))
     } catch (e: CancellationException) {
         throw e
@@ -50,7 +52,9 @@ class CharacterRepositoryImpl @Inject constructor(
         if (error is HttpException && error.code() == 404) {
             return Result.success(CharacterPage(emptyList(), page, 0))
         }
+
         if (page != 1) return Result.failure(error)
+
         val cached = runCatchingCancellable {
             dao.searchCharacters(
                 query = query,
@@ -58,6 +62,7 @@ class CharacterRepositoryImpl @Inject constructor(
                 gender = filters.gender,
             ).map { it.toDomain() }
         }.getOrDefault(emptyList())
+
         return if (cached.isEmpty()) {
             Result.failure(error)
         } else {

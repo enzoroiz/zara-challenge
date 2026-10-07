@@ -62,11 +62,13 @@ fun CharacterDetailScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+
     LaunchedEffect(viewModel, snackbarHostState, context) {
         viewModel.errorEvents.collect { message ->
             snackbarHostState.showSnackbar(message.asString(context))
         }
     }
+
     LaunchedEffect(state) {
         if (state == CharacterDetailUiState.Unavailable) {
             launch {
@@ -79,6 +81,7 @@ fun CharacterDetailScreen(
             onBack()
         }
     }
+
     Box(Modifier.fillMaxSize()) {
         when (val current = state) {
             CharacterDetailUiState.Loading -> Column(
@@ -86,9 +89,11 @@ fun CharacterDetailScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) { CircularProgressIndicator() }
+
             CharacterDetailUiState.Unavailable -> CharacterUnavailableContent(
                 modifier = Modifier.fillMaxSize(),
             )
+
             is CharacterDetailUiState.Success -> CharacterContent(
                 current,
                 onCharacterClick = onCharacterClick,
@@ -96,6 +101,7 @@ fun CharacterDetailScreen(
                 modifier = Modifier.fillMaxSize(),
             )
         }
+
         TopAppBar(
             modifier = Modifier.align(Alignment.TopCenter),
             title = {},
@@ -132,6 +138,7 @@ fun CharacterDetailScreen(
                 }
             }
         )
+
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -151,6 +158,7 @@ private fun CharacterUnavailableContent(modifier: Modifier) {
                 .aspectRatio(1f)
                 .background(Color.LightGray),
         )
+
         Column(
             modifier = Modifier.fillMaxWidth().padding(
                 start = 20.dp,
@@ -171,6 +179,7 @@ private fun CharacterUnavailableContent(modifier: Modifier) {
                 LocationInfo(title = stringResource(R.string.detail_origin), value = "-", modifier = Modifier.weight(1f))
                 LocationInfo(title = stringResource(R.string.detail_location), value = "-", modifier = Modifier.weight(1f))
             }
+
             HorizontalDivider(color = Color(0xFFE5E5E5), thickness = 1.dp)
             Text(
                 stringResource(R.string.detail_section_title),
@@ -178,6 +187,7 @@ private fun CharacterUnavailableContent(modifier: Modifier) {
                 color = Color.Black,
                 fontWeight = FontWeight.Normal,
             )
+
             DetailRow(stringResource(R.string.detail_type), "-")
             DetailRow(stringResource(R.string.detail_episodes), "-")
         }
@@ -218,6 +228,7 @@ private fun CharacterContent(
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.Black,
             )
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -229,11 +240,13 @@ private fun CharacterContent(
                     color = Color.Black,
                 )
             }
+
             Text(
                 "${character.species} - ${character.gender}",
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Gray,
             )
+
             HorizontalDivider(color = Color(0xFFE5E5E5), thickness = 1.dp)
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -250,6 +263,7 @@ private fun CharacterContent(
                     modifier = Modifier.weight(1f),
                 )
             }
+
             HorizontalDivider(color = Color(0xFFE5E5E5), thickness = 1.dp)
             Text(
                 stringResource(R.string.detail_section_title),
@@ -259,6 +273,7 @@ private fun CharacterContent(
             )
             DetailRow(stringResource(R.string.detail_type), character.type.ifBlank { "-" })
             DetailRow(stringResource(R.string.detail_episodes), character.episodeCount.toString())
+
             if (state.similarCharacters.isNotEmpty()) {
                 CharacterCarousel(
                     title = stringResource(R.string.similar_characters),
@@ -296,6 +311,7 @@ private fun DetailRow(label: String, value: String) {
             style = MaterialTheme.typography.bodyMedium,
             color = Color.Gray,
         )
+
         Text(
             value,
             modifier = Modifier.weight(1f),
@@ -321,6 +337,7 @@ private fun CharacterContentPreview() {
         episodeCount = 51,
         created = "2017-11-04",
     )
+
     ZaraChallengeTheme {
         CharacterContent(
             state = CharacterDetailUiState.Success(

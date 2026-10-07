@@ -29,6 +29,7 @@ class FavoritesViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(FavoritesUiState())
     val uiState = _uiState.asStateFlow()
+
     private val _errorEvents = Channel<UiText>(Channel.BUFFERED)
     val errorEvents = _errorEvents.receiveAsFlow()
 

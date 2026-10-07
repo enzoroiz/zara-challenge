@@ -38,12 +38,14 @@ class CharacterDetailViewModel @Inject constructor(
     private val observeFavoriteIds: ObserveFavoriteIdsUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
 ) : ViewModel() {
+    private var favoriteIds: Set<Int> = emptySet()
     private val id: Int = checkNotNull(savedStateHandle["characterId"])
+
     private val _uiState = MutableStateFlow<CharacterDetailUiState>(CharacterDetailUiState.Loading)
     val uiState: StateFlow<CharacterDetailUiState> = _uiState.asStateFlow()
+
     private val _errorEvents = Channel<UiText>(Channel.BUFFERED)
     val errorEvents = _errorEvents.receiveAsFlow()
-    private var favoriteIds: Set<Int> = emptySet()
 
     init {
         viewModelScope.launch {
@@ -55,6 +57,7 @@ class CharacterDetailViewModel @Inject constructor(
                 }
             }
         }
+
         load()
     }
 
@@ -66,6 +69,7 @@ class CharacterDetailViewModel @Inject constructor(
                 isFavorite = id in favoriteIds,
                 favoriteIds = favoriteIds,
             )
+
             getSimilarCharacters(character).onSuccess { matches ->
                 val current = _uiState.value as? CharacterDetailUiState.Success
                 if (current != null && current.character.id == character.id) {

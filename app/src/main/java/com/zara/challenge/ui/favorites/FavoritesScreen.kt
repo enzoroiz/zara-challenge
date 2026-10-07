@@ -45,11 +45,13 @@ fun FavoritesScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+
     LaunchedEffect(viewModel, snackbarHostState, context) {
         viewModel.errorEvents.collect { message ->
             snackbarHostState.showSnackbar(message.asString(context))
         }
     }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -73,6 +75,7 @@ fun FavoritesScreen(
                 state.error?.let {
                     Text(it.asString(), color = androidx.compose.material3.MaterialTheme.colorScheme.error)
                 }
+
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier.weight(1f),

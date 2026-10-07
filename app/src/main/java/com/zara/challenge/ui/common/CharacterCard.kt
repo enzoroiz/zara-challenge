@@ -65,6 +65,7 @@ fun CharacterCard(
                         .aspectRatio(1f)
                         .clip(RoundedCornerShape(12.dp)),
                 )
+
                 if (onFavoriteClick != null) {
                     IconButton(
                         onClick = onFavoriteClick,
@@ -87,6 +88,7 @@ fun CharacterCard(
                     }
                 }
             }
+
             Column(
                 Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -98,6 +100,7 @@ fun CharacterCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -111,6 +114,7 @@ fun CharacterCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
+
                 Text(
                     character.gender,
                     style = MaterialTheme.typography.bodySmall,
@@ -118,6 +122,7 @@ fun CharacterCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+
                 Text(
                     character.locationName,
                     style = MaterialTheme.typography.bodySmall,

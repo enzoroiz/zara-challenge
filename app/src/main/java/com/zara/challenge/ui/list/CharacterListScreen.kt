@@ -146,6 +146,7 @@ fun CharacterListScreen(
                         .fillMaxSize()
                         .background(Color.Black.copy(alpha = 0.32f * menuProgress)),
                 )
+
                 Row(Modifier.fillMaxSize()) {
                     CharacterFilterMenu(
                         filters = state.filters,
@@ -163,6 +164,7 @@ fun CharacterListScreen(
                                 )
                             },
                     )
+
                     Box(
                         Modifier
                             .weight(1f)

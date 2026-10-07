@@ -59,10 +59,12 @@ fun CharacterFilterMenu(
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color.Black,
                 )
+
                 IconButton(onClick = onDismiss) {
                     Icon(Icons.Default.Check, contentDescription = stringResource(R.string.close_filters))
                 }
             }
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
             FilterSection(
                 title = stringResource(R.string.filter_gender),
@@ -77,6 +79,7 @@ fun CharacterFilterMenu(
                     onFilterChanged(filters.copy(gender = selected.takeUnless { it == filters.gender }))
                 },
             )
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
             FilterSection(
                 title = stringResource(R.string.filter_status),
@@ -90,6 +93,7 @@ fun CharacterFilterMenu(
                     onFilterChanged(filters.copy(status = selected.takeUnless { it == filters.status }))
                 },
             )
+
             OutlinedButton(
                 onClick = { onFilterChanged(CharacterFilters()) },
                 modifier = Modifier
@@ -122,6 +126,7 @@ private fun FilterSection(
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
         )
+
         options.forEach { (option, labelRes) ->
             val selected = option == selection
             Row(
@@ -150,6 +155,7 @@ private fun FilterSection(
                 } else {
                     Spacer(Modifier.padding(start = 24.dp))
                 }
+
                 Text(
                     stringResource(labelRes),
                     color = Color.Black,

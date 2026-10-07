@@ -40,11 +40,6 @@ class CharacterListViewModel @Inject constructor(
     private val observeFavoriteIds: ObserveFavoriteIdsUseCase,
     private val toggleFavorite: ToggleFavoriteUseCase,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(CharacterListUiState())
-    val uiState: StateFlow<CharacterListUiState> = _uiState.asStateFlow()
-    private val _errorEvents = Channel<UiText>(Channel.BUFFERED)
-    val errorEvents = _errorEvents.receiveAsFlow()
-
     private var currentPage = 0
     private var totalPages = Int.MAX_VALUE
     private var searchJob: Job? = null
@@ -53,20 +48,29 @@ class CharacterListViewModel @Inject constructor(
     private var requestId = 0
     private var isOffline = false
 
+    private val _uiState = MutableStateFlow(CharacterListUiState())
+    val uiState: StateFlow<CharacterListUiState> = _uiState.asStateFlow()
+
+    private val _errorEvents = Channel<UiText>(Channel.BUFFERED)
+    val errorEvents = _errorEvents.receiveAsFlow()
+
     init {
         viewModelScope.launch {
             observeFavoriteIds().collect { ids ->
                 _uiState.value = _uiState.value.copy(favoriteIds = ids)
             }
         }
+
         loadInitial()
     }
 
     fun onQueryChanged(query: String) {
         listLoadJob?.cancel()
         cancelLoadMore()
+
         requestId++
         _uiState.value = _uiState.value.copy(query = query)
+
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(350.milliseconds)
@@ -77,18 +81,23 @@ class CharacterListViewModel @Inject constructor(
     fun onFiltersChanged(filters: CharacterFilters) {
         searchJob?.cancel()
         cancelLoadMore()
+
         _uiState.value = _uiState.value.copy(filters = filters)
+
         loadInitial()
     }
 
     fun loadInitial() {
         listLoadJob?.cancel()
         loadMoreJob?.cancel()
+
         val request = ++requestId
         val query = _uiState.value.query
         val filters = _uiState.value.filters
+
         currentPage = 0
         totalPages = Int.MAX_VALUE
+
         _uiState.value = _uiState.value.copy(
             isLoading = true,
             isLoadingMore = false,
@@ -96,6 +105,7 @@ class CharacterListViewModel @Inject constructor(
             characters = emptyList(),
             endReached = false,
         )
+
         listLoadJob = viewModelScope.launch {
             getCharacters(1, query, filters).onSuccess { page ->
                 if (request != requestId) return@onSuccess
@@ -110,6 +120,7 @@ class CharacterListViewModel @Inject constructor(
                 )
             }.onFailure { error ->
                 if (request != requestId) return@onFailure
+
                 val message = error.toUserMessage()
                 _uiState.value = _uiState.value.copy(isLoading = false, hasLoadError = true)
                 _errorEvents.trySend(message).getOrThrow()
@@ -122,6 +133,7 @@ class CharacterListViewModel @Inject constructor(
         if (state.isLoading || state.isLoadingMore || currentPage >= totalPages) return
         val request = requestId
         val page = currentPage + 1
+        
         _uiState.value = state.copy(isLoadingMore = true)
         loadMoreJob = viewModelScope.launch {
             val response = getCharacters(page, state.query, state.filters)
