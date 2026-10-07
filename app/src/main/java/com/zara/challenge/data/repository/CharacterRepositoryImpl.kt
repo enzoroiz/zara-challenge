@@ -25,7 +25,7 @@ class CharacterRepositoryImpl @Inject constructor(
         page: Int,
         query: String,
         filters: CharacterFilters,
-    ): Result<CharacterPage> = runCatching {
+    ): Result<CharacterPage> = try {
         val response = api.getCharacters(
             page = page,
             name = query.takeIf { it.isNotBlank() },
@@ -34,22 +34,36 @@ class CharacterRepositoryImpl @Inject constructor(
         )
         val characters = response.results.map { it.toDomain() }
         upsertAll(response)
-        CharacterPage(characters, page, response.info.pages)
-    }.recoverCatching { error ->
+        Result.success(CharacterPage(characters, page, response.info.pages))
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        fallback(e, page, query, filters)
+    }
+
+    private suspend fun fallback(
+        error: Exception,
+        page: Int,
+        query: String,
+        filters: CharacterFilters,
+    ): Result<CharacterPage> {
         if (error is HttpException && error.code() == 404) {
-            return@recoverCatching CharacterPage(emptyList(), page, 0)
+            return Result.success(CharacterPage(emptyList(), page, 0))
         }
-        if (page != 1) throw error
+        if (page != 1) return Result.failure(error)
         val cached = dao.searchCharacters(
             query = query,
             status = filters.status,
             gender = filters.gender,
         ).map { it.toDomain() }
-        if (cached.isEmpty()) throw error
-        CharacterPage(cached, page = 1, totalPages = 1, isFromCache = true)
+        return if (cached.isEmpty()) {
+            Result.failure(error)
+        } else {
+            Result.success(CharacterPage(cached, page = 1, totalPages = 1, isFromCache = true))
+        }
     }
 
-    override suspend fun getCharacter(id: Int): Result<Character> = runCatching {
+    override suspend fun getCharacter(id: Int): Result<Character> = runCatchingCancellable {
         requireNotNull(dao.getCharacter(id)) { "Character $id is not cached" }.toDomain()
     }
 
@@ -59,12 +73,12 @@ class CharacterRepositoryImpl @Inject constructor(
     override fun observeFavoriteIds(): Flow<Set<Int>> =
         dao.observeFavoriteIds().map { ids -> ids.toSet() }
 
-    override suspend fun toggleFavorite(character: Character): Result<Unit> = runCatching {
+    override suspend fun toggleFavorite(character: Character): Result<Unit> = runCatchingCancellable {
         dao.toggleFavorite(character.characterToEntity())
     }
 
     override suspend fun getSimilarCharacters(character: Character): Result<List<Character>> =
-        runCatching {
+        runCatchingCancellable {
             val firstName = character.name.trim().substringBefore(' ')
             if (firstName.isBlank()) {
                 emptyList()
@@ -82,4 +96,13 @@ class CharacterRepositoryImpl @Inject constructor(
             Log.w("CharacterRepository", "Cache write failed", e)
         }
     }
+
+    private inline fun <T> runCatchingCancellable(block: () -> T): Result<T> =
+        try {
+            Result.success(block())
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
 }
