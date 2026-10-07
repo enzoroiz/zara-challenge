@@ -77,7 +77,6 @@ class CharacterDetailViewModelStateTest {
         assertEquals(rick, state.character)
         assertEquals(listOf(prime), state.similarCharacters)
         assertFalse(state.isFavorite)
-        assertNull(state.recommendationError)
     }
 
     @Test
@@ -121,25 +120,14 @@ class CharacterDetailViewModelStateTest {
     }
 
     @Test
-    fun `recommendation failure keeps the character and exposes the error`() = runTest {
+    fun `recommendation failure keeps the character and fails silently`() = runTest {
         coEvery { getSimilarCharacters(rick) } returns Result.failure(IllegalStateException("db down"))
         val vm = createViewModel()
         advanceUntilIdle()
 
         val state = vm.uiState.value as CharacterDetailUiState.Success
         assertEquals(rick, state.character)
-        assertEquals("db down", state.recommendationError)
         assertTrue(state.similarCharacters.isEmpty())
-    }
-
-    @Test
-    fun `recommendation failure without a message uses a default`() = runTest {
-        coEvery { getSimilarCharacters(rick) } returns Result.failure(RuntimeException())
-        val vm = createViewModel()
-        advanceUntilIdle()
-
-        val state = vm.uiState.value as CharacterDetailUiState.Success
-        assertEquals("Unable to load recommendations", state.recommendationError)
     }
 
     @Test

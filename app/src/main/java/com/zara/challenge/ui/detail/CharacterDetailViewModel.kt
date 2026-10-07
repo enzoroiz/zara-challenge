@@ -26,7 +26,6 @@ sealed interface CharacterDetailUiState {
         val isFavorite: Boolean = false,
         val favoriteIds: Set<Int> = emptySet(),
         val similarCharacters: List<Character> = emptyList(),
-        val recommendationError: String? = null,
     ) : CharacterDetailUiState
 }
 
@@ -61,23 +60,17 @@ class CharacterDetailViewModel @Inject constructor(
     fun load() = viewModelScope.launch {
         _uiState.value = CharacterDetailUiState.Loading
         getCharacter(id).onSuccess { character ->
-            getSimilarCharacters(character)
-                .onSuccess { matches ->
-                    _uiState.value = CharacterDetailUiState.Success(
-                        character = character,
-                        isFavorite = id in favoriteIds,
-                        favoriteIds = favoriteIds,
-                        similarCharacters = matches,
-                    )
+            _uiState.value = CharacterDetailUiState.Success(
+                character = character,
+                isFavorite = id in favoriteIds,
+                favoriteIds = favoriteIds,
+            )
+            getSimilarCharacters(character).onSuccess { matches ->
+                val current = _uiState.value as? CharacterDetailUiState.Success
+                if (current != null && current.character.id == character.id) {
+                    _uiState.value = current.copy(similarCharacters = matches)
                 }
-                .onFailure { error ->
-                    _uiState.value = CharacterDetailUiState.Success(
-                        character = character,
-                        isFavorite = id in favoriteIds,
-                        favoriteIds = favoriteIds,
-                        recommendationError = error.message ?: "Unable to load recommendations",
-                    )
-                }
+            }
         }.onFailure {
             _uiState.value = CharacterDetailUiState.Unavailable
         }

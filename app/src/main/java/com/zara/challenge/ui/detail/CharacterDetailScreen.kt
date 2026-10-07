@@ -249,7 +249,6 @@ private fun CharacterContent(
             )
             DetailRow("TYPE", character.type.ifBlank { "-" })
             DetailRow("EPISODES", character.episodeCount.toString())
-            state.recommendationError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             if (state.similarCharacters.isNotEmpty()) {
                 CharacterCarousel(
                     title = "Characters like you",
