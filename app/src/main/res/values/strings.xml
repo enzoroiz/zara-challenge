@@ -29,7 +29,7 @@
     <string name="no_characters">No characters found</string>
     <string name="load_characters_error">Unable to load characters</string>
     <string name="retry">RETRY</string>
-    <string name="offline_results">You\'re seeing offline results</string>
+    <string name="offline_results">Showing previously loaded results</string>
 
     <string name="filters_title">Filters</string>
     <string name="close_filters">Close filters</string>
