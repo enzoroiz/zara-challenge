@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import retrofit2.HttpException
 import javax.inject.Inject
-import kotlin.collections.map
 
 class CharacterRepositoryImpl @Inject constructor(
     private val api: ZaraChallengeApi,
