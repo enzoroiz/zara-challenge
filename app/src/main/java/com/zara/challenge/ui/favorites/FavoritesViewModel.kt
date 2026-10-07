@@ -36,11 +36,10 @@ class FavoritesViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             observeFavorites()
-                .catch { error ->
+                .catch { _ ->
                     _uiState.value = FavoritesUiState(
                         isLoading = false,
-                        error = error.message?.let(UiText::Plain)
-                            ?: UiText.Res(R.string.favorites_load_error),
+                        error = UiText.Res(R.string.favorites_load_error),
                     )
                 }
                 .collect { characters ->
