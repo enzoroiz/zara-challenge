@@ -32,6 +32,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CharacterDetailViewModelStateTest {
@@ -194,6 +195,6 @@ class CharacterDetailViewModelStateTest {
             UiText.Res(R.string.favorites_update_error),
             vm.errorEvents.first(),
         )
-        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
+        assertNull(withTimeoutOrNull(1.milliseconds) { vm.errorEvents.first() })
     }
 }
