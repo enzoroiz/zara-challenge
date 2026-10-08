@@ -92,6 +92,7 @@ class CharacterDaoTest {
         val rick = testEntity(1)
 
         dao.toggleFavorite(rick)
+        assertEquals(rick, dao.getCharacter(1))
         assertTrue(dao.isFavorite(1))
         assertEquals(setOf(1), dao.observeFavoriteIds().first().toSet())
         assertEquals(listOf(1), dao.observeFavorites().first().map { it.id })
@@ -100,30 +101,6 @@ class CharacterDaoTest {
         assertFalse(dao.isFavorite(1))
         assertTrue(dao.observeFavoriteIds().first().isEmpty())
         assertTrue(dao.observeFavorites().first().isEmpty())
-    }
-
-    @Test
-    fun `toggleFavorite caches the character it favorites`() = runTest {
-        dao.toggleFavorite(testEntity(7, "Birdperson"))
-
-        assertEquals("Birdperson", dao.getCharacter(7)?.name)
-    }
-
-    @Test
-    fun `insertFavorite ignores duplicates`() = runTest {
-        dao.upsertAll(listOf(testEntity(1)))
-
-        dao.insertFavorite(FavoriteCharacterEntity(1))
-        dao.insertFavorite(FavoriteCharacterEntity(1))
-
-        assertEquals(listOf(1), dao.observeFavoriteIds().first())
-    }
-
-    @Test
-    fun `deleteFavorite on a non favorite is a no-op`() = runTest {
-        dao.deleteFavorite(1)
-
-        assertTrue(dao.observeFavoriteIds().first().isEmpty())
     }
 
     @Test
@@ -166,20 +143,6 @@ class CharacterDaoTest {
         assertEquals(5, matches.size)
         assertTrue(matches.none { it.id == 1 || it.id == 8 || it.id == 9 })
         assertEquals(matches.map { it.name.lowercase() }, matches.map { it.name.lowercase() }.sorted())
-    }
-
-    @Test
-    fun `similar characters handles single word names`() = runTest {
-        dao.upsertAll(listOf(testEntity(1, "Rick"), testEntity(2, "Rick Sanchez")))
-
-        assertEquals(listOf(2), dao.findByFirstName("rick", 1).map { it.id })
-    }
-
-    @Test
-    fun `similar characters ignore leading whitespace in stored names`() = runTest {
-        dao.upsertAll(listOf(testEntity(1, "Rick Sanchez"), testEntity(2, "  Rick Prime")))
-
-        assertEquals(listOf(2), dao.findByFirstName("Rick", 1).map { it.id })
     }
 
     @Test

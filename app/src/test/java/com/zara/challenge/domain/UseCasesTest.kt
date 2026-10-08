@@ -45,17 +45,12 @@ class UseCasesTest {
     }
 
     @Test
-    fun `get character delegates to the repository`() = runTest {
-        coEvery { repository.getCharacter(1) } returns Result.success(rick)
-
-        assertEquals(rick, GetCharacterUseCase(repository)(1).getOrThrow())
-    }
-
-    @Test
-    fun `get similar characters delegates to the repository`() = runTest {
+    fun `character detail and recommendations delegate to the repository`() = runTest {
         val morty = testCharacter(2, "Rick Prime")
+        coEvery { repository.getCharacter(1) } returns Result.success(rick)
         coEvery { repository.getSimilarCharacters(rick) } returns Result.success(listOf(morty))
 
+        assertEquals(rick, GetCharacterUseCase(repository)(1).getOrThrow())
         assertEquals(listOf(morty), GetSimilarCharactersUseCase(repository)(rick).getOrThrow())
     }
 
@@ -68,16 +63,11 @@ class UseCasesTest {
     }
 
     @Test
-    fun `observe favorites exposes the repository flow`() = runTest {
+    fun `favorite use cases expose the repository flows`() = runTest {
         every { repository.observeFavorites() } returns flowOf(listOf(rick))
-
-        assertEquals(listOf(listOf(rick)), ObserveFavoritesUseCase(repository)().toList())
-    }
-
-    @Test
-    fun `observe favorite ids exposes the repository flow`() = runTest {
         every { repository.observeFavoriteIds() } returns flowOf(setOf(1, 2))
 
+        assertEquals(listOf(listOf(rick)), ObserveFavoritesUseCase(repository)().toList())
         assertEquals(listOf(setOf(1, 2)), ObserveFavoriteIdsUseCase(repository)().toList())
     }
 }

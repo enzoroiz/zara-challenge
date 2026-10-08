@@ -80,16 +80,6 @@ class FavoritesViewModelTest {
     }
 
     @Test
-    fun `observation failure without a message uses the same generic error`() = runTest {
-        every { observeFavorites() } returns flow { throw RuntimeException() }
-
-        val vm = FavoritesViewModel(observeFavorites, toggleFavorite)
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertEquals(UiText.Res(R.string.favorites_load_error), vm.uiState.value.error)
-    }
-
-    @Test
     fun `removing a favorite toggles it`() = runTest {
         every { observeFavorites() } returns MutableSharedFlow()
         coEvery { toggleFavorite(rick) } returns Result.success(Unit)

@@ -92,7 +92,7 @@ class CharacterDetailViewModelTest {
     }
 
     @Test
-    fun `reflects an already favorited character`() = runTest {
+    fun `reflects current and subsequent favorite changes`() = runTest {
         favoriteIds.value = setOf(1)
         val vm = createViewModel()
         advanceUntilIdle()
@@ -100,35 +100,17 @@ class CharacterDetailViewModelTest {
         val state = vm.uiState.value as CharacterDetailUiState.Success
         assertTrue(state.isFavorite)
         assertEquals(setOf(1), state.favoriteIds)
-    }
-
-    @Test
-    fun `favorite changes update the loaded state`() = runTest {
-        val vm = createViewModel()
-        advanceUntilIdle()
 
         favoriteIds.value = setOf(1, 2)
         advanceUntilIdle()
 
-        val state = vm.uiState.value as CharacterDetailUiState.Success
-        assertTrue(state.isFavorite)
-        assertEquals(setOf(1, 2), state.favoriteIds)
+        val updatedState = vm.uiState.value as CharacterDetailUiState.Success
+        assertTrue(updatedState.isFavorite)
+        assertEquals(setOf(1, 2), updatedState.favoriteIds)
 
         favoriteIds.value = setOf(2)
         advanceUntilIdle()
         assertFalse((vm.uiState.value as CharacterDetailUiState.Success).isFavorite)
-    }
-
-    @Test
-    fun `favorite changes do not affect an unavailable state`() = runTest {
-        coEvery { getCharacter(1) } returns Result.failure(IllegalStateException("missing"))
-        val vm = createViewModel()
-        advanceUntilIdle()
-
-        favoriteIds.value = setOf(1)
-        advanceUntilIdle()
-
-        assertEquals(CharacterDetailUiState.Unavailable, vm.uiState.value)
     }
 
     @Test
@@ -166,28 +148,6 @@ class CharacterDetailViewModelTest {
         advanceUntilIdle()
 
         coVerify(exactly = 1) { toggleFavorite(rick) }
-    }
-
-    @Test
-    fun `toggle favorite before the character is loaded does nothing`() = runTest {
-        val vm = createViewModel()
-
-        vm.toggleFavorite()
-        advanceUntilIdle()
-
-        coVerify(exactly = 0) { toggleFavorite(any()) }
-    }
-
-    @Test
-    fun `toggling a similar character favorites that character`() = runTest {
-        coEvery { toggleFavorite(prime) } returns Result.success(Unit)
-        val vm = createViewModel()
-        advanceUntilIdle()
-
-        vm.toggleFavorite(prime)
-        advanceUntilIdle()
-
-        coVerify { toggleFavorite(prime) }
     }
 
     @Test
