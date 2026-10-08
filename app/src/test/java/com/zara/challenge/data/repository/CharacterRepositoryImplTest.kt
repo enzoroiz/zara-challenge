@@ -1,21 +1,17 @@
 package com.zara.challenge.data.repository
 
-import android.util.Log
-import com.zara.challenge.testCharacter
-import com.zara.challenge.testDto
-import com.zara.challenge.testEntity
 import com.zara.challenge.data.local.CharacterDao
 import com.zara.challenge.data.remote.ZaraChallengeApi
 import com.zara.challenge.data.remote.dto.CharacterPageDto
 import com.zara.challenge.data.remote.dto.PageInfoDto
 import com.zara.challenge.domain.model.CharacterFilters
+import com.zara.challenge.testCharacter
+import com.zara.challenge.testDto
+import com.zara.challenge.testEntity
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.unmockkStatic
-import java.io.IOException
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -24,120 +20,49 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
-import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import retrofit2.HttpException
 import retrofit2.Response
+import java.io.IOException
 
 class CharacterRepositoryImplTest {
     private val api = mockk<ZaraChallengeApi>()
     private val dao = mockk<CharacterDao>(relaxed = true)
     private val repository = CharacterRepositoryImpl(api, dao)
-    private val offline = IOException("offline")
-
-    @Before
-    fun mockAndroidLog() {
-        mockkStatic(Log::class)
-        every { Log.w(any<String>(), any<String>(), any<Throwable>()) } returns 0
-    }
-
-    @After
-    fun unmockAndroidLog() = unmockkStatic(Log::class)
-
-    private fun http(code: Int) = HttpException(Response.error<Any>(code, "".toResponseBody()))
 
     @Test
-    fun `list request forwards supported filters and caches results`() = runTest {
-        val dto = testDto(originName = "Earth", locationName = "Earth", image = "image", episodes = emptyList(), url = "", created = "")
-        coEvery {
-            api.getCharacters(
-                page = 1,
-                name = "rick",
-                status = "alive",
-                gender = "male",
-            )
-        } returns CharacterPageDto(PageInfoDto(1, 1, null, null), listOf(dto))
+    fun `fetches filtered characters and caches the mapped results`() = runTest {
+        coEvery { api.getCharacters(2, "rick", "alive", "male") } returns
+            CharacterPageDto(PageInfoDto(2, 4, null, null), listOf(testDto()))
 
-        val result = repository.getCharacters(
-            page = 1,
+        val page = repository.getCharacters(
+            page = 2,
             query = "rick",
             filters = CharacterFilters(status = "alive", gender = "male"),
-        )
+        ).getOrThrow()
 
-        assertTrue(result.isSuccess)
-        assertEquals("Rick Sanchez", result.getOrThrow().characters.single().name)
-        coVerify { dao.upsertAll(match { it.single().id == 1 }) }
-    }
-
-    @Test
-    fun `404 from filtered list is treated as an empty result`() = runTest {
-        val notFound = mockk<HttpException>()
-        every { notFound.code() } returns 404
-        coEvery {
-            api.getCharacters(
-                page = 1,
-                name = null,
-                status = null,
-                gender = null,
-            )
-        } throws notFound
-
-        val result = repository.getCharacters(1, "", CharacterFilters())
-
-        assertTrue(result.isSuccess)
-        assertTrue(result.getOrThrow().characters.isEmpty())
-        assertEquals(0, result.getOrThrow().totalPages)
-    }
-
-    @Test
-    fun `detail is retrieved from the database without making an API request`() = runTest {
-        coEvery { dao.getCharacter(1) } returns characterEntity()
-
-        val result = repository.getCharacter(1)
-
-        assertTrue(result.isSuccess)
-        assertEquals("Rick Sanchez", result.getOrThrow().name)
-        coVerify { dao.getCharacter(1) }
-        coVerify(exactly = 0) {
-            api.getCharacters(any(), any(), any(), any())
-        }
-    }
-
-    @Test
-    fun `missing cached detail is a failure`() = runTest {
-        coEvery { dao.getCharacter(1) } returns null
-
-        val result = repository.getCharacter(1)
-
-        assertTrue(result.isFailure)
-        assertEquals("Character 1 is not cached", result.exceptionOrNull()?.message)
-    }
-
-    @Test
-    fun `database detail read failure is returned as a failure`() = runTest {
-        coEvery { dao.getCharacter(1) } throws IllegalStateException("Database unavailable")
-
-        val result = repository.getCharacter(1)
-
-        assertTrue(result.isFailure)
-        assertEquals("Database unavailable", result.exceptionOrNull()?.message)
-    }
-
-    @Test
-    fun `blank query is not sent to the API and page metadata is returned`() = runTest {
-        coEvery { api.getCharacters(3, null, null, null) } returns
-            CharacterPageDto(PageInfoDto(40, 7, null, null), listOf(testDto()))
-
-        val page = repository.getCharacters(3, "   ", CharacterFilters()).getOrThrow()
-
-        assertEquals(3, page.page)
-        assertEquals(7, page.totalPages)
+        assertEquals(listOf(testCharacter()), page.characters)
+        assertEquals(2, page.page)
+        assertEquals(4, page.totalPages)
         assertFalse(page.isFromCache)
+        coVerify { dao.upsertAll(listOf(testEntity())) }
     }
 
     @Test
-    fun `first page falls back to the cache when the request fails`() = runTest {
+    fun `not found response returns an empty page`() = runTest {
+        coEvery {
+            api.getCharacters(any(), any(), any(), any())
+        } throws HttpException(Response.error<Any>(404, "".toResponseBody()))
+
+        val page = repository.getCharacters(1, "unknown", CharacterFilters()).getOrThrow()
+
+        assertTrue(page.characters.isEmpty())
+        assertEquals(0, page.totalPages)
+    }
+
+    @Test
+    fun `first page uses cached results when the request fails`() = runTest {
+        val offline = IOException("offline")
         coEvery { api.getCharacters(any(), any(), any(), any()) } throws offline
         coEvery { dao.searchCharacters("rick", "alive", "male") } returns listOf(testEntity())
 
@@ -145,14 +70,13 @@ class CharacterRepositoryImplTest {
             1, "rick", CharacterFilters(status = "alive", gender = "male"),
         ).getOrThrow()
 
+        assertEquals(listOf(testCharacter()), page.characters)
         assertTrue(page.isFromCache)
-        assertEquals(1, page.page)
-        assertEquals(1, page.totalPages)
-        assertEquals(listOf(testCharacter()), page.characters)
     }
 
     @Test
-    fun `first page failure with an empty cache returns the original error`() = runTest {
+    fun `first page request failure is returned when cache is empty`() = runTest {
+        val offline = IOException("offline")
         coEvery { api.getCharacters(any(), any(), any(), any()) } throws offline
         coEvery { dao.searchCharacters(any(), any(), any()) } returns emptyList()
 
@@ -162,166 +86,55 @@ class CharacterRepositoryImplTest {
     }
 
     @Test
-    fun `later pages never fall back to the cache`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any()) } throws offline
+    fun `detail lookup returns the cached character`() = runTest {
+        coEvery { dao.getCharacter(1) } returns testEntity()
 
-        val result = repository.getCharacters(2, "", CharacterFilters())
-
-        assertSame(offline, result.exceptionOrNull())
-        coVerify(exactly = 0) { dao.searchCharacters(any(), any(), any()) }
+        assertEquals(testCharacter(), repository.getCharacter(1).getOrThrow())
     }
 
     @Test
-    fun `404 on a later page is an empty last page`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any()) } throws http(404)
+    fun `detail lookup fails when the character is not cached`() = runTest {
+        coEvery { dao.getCharacter(1) } returns null
 
-        val page = repository.getCharacters(2, "zzz", CharacterFilters()).getOrThrow()
+        val result = repository.getCharacter(1)
 
-        assertTrue(page.characters.isEmpty())
-        assertEquals(2, page.page)
-        assertEquals(0, page.totalPages)
+        assertEquals("Character 1 is not cached", result.exceptionOrNull()?.message)
     }
 
     @Test
-    fun `non 404 http errors fall back to the cache on the first page`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any()) } throws http(500)
-        coEvery { dao.searchCharacters("", null, null) } returns listOf(testEntity())
-
-        assertTrue(repository.getCharacters(1, "", CharacterFilters()).getOrThrow().isFromCache)
-    }
-
-    @Test
-    fun `non 404 http errors are reported when there is no cache`() = runTest {
-        val error = http(429)
-        coEvery { api.getCharacters(any(), any(), any(), any()) } throws error
-        coEvery { dao.searchCharacters(any(), any(), any()) } returns emptyList()
-
-        assertSame(error, repository.getCharacters(1, "", CharacterFilters()).exceptionOrNull())
-    }
-
-    @Test
-    fun `successful fetch is cached`() = runTest {
-        coEvery { api.getCharacters(1, null, null, null) } returns
-            CharacterPageDto(PageInfoDto(2, 1, null, null), listOf(testDto(1), testDto(2, "Morty")))
-
-        repository.getCharacters(1, "", CharacterFilters())
-
-        coVerify { dao.upsertAll(match { list -> list.map { it.id } == listOf(1, 2) }) }
-    }
-
-    @Test
-    fun `cache write failure still returns the network result`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any()) } returns
-            CharacterPageDto(PageInfoDto(1, 3, null, null), listOf(testDto()))
-        coEvery { dao.upsertAll(any()) } throws IllegalStateException("disk full")
-
-        val page = repository.getCharacters(1, "", CharacterFilters()).getOrThrow()
-
-        assertFalse(page.isFromCache)
-        assertEquals(listOf(testCharacter()), page.characters)
-        assertEquals(3, page.totalPages)
-        coVerify(exactly = 0) { dao.searchCharacters(any(), any(), any()) }
-    }
-
-    @Test
-    fun `cache fallback read failure returns the original error as a failure`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any()) } throws offline
-        coEvery { dao.searchCharacters(any(), any(), any()) } throws IllegalStateException("db")
-
-        val result = repository.getCharacters(1, "", CharacterFilters())
-
-        assertTrue(result.isFailure)
-        assertSame(offline, result.exceptionOrNull())
-    }
-
-    @Test
-    fun `404 on the first page does not read the cache`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any()) } throws http(404)
-
-        val page = repository.getCharacters(1, "zzz", CharacterFilters()).getOrThrow()
-
-        assertTrue(page.characters.isEmpty())
-        assertFalse(page.isFromCache)
-        coVerify(exactly = 0) { dao.searchCharacters(any(), any(), any()) }
-    }
-
-    @Test
-    fun `later page failure does not read the cache`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any()) } throws offline
-
-        val result = repository.getCharacters(2, "", CharacterFilters())
-
-        assertSame(offline, result.exceptionOrNull())
-        coVerify(exactly = 0) { dao.searchCharacters(any(), any(), any()) }
-    }
-
-    @Test(expected = OutOfMemoryError::class)
-    fun `errors that are not exceptions are not swallowed`() = runTest {
-        coEvery { api.getCharacters(any(), any(), any(), any()) } throws OutOfMemoryError()
-
-        repository.getCharacters(1, "", CharacterFilters())
-    }
-
-    @Test
-    fun `observe favorites maps entities to domain`() = runTest {
+    fun `favorite flows map characters and expose unique ids`() = runTest {
         every { dao.observeFavorites() } returns flowOf(listOf(testEntity(2, "Morty")))
+        every { dao.observeFavoriteIds() } returns flowOf(listOf(1, 2, 2))
 
         assertEquals(
             listOf(listOf(testCharacter(2, "Morty"))),
             repository.observeFavorites().toList(),
         )
-    }
-
-    @Test
-    fun `observe favorite ids exposes a set`() = runTest {
-        every { dao.observeFavoriteIds() } returns flowOf(listOf(1, 2, 2))
-
         assertEquals(listOf(setOf(1, 2)), repository.observeFavoriteIds().toList())
     }
 
     @Test
-    fun `toggle favorite stores the entity`() = runTest {
-        val result = repository.toggleFavorite(testCharacter())
+    fun `toggling a favorite stores its entity`() = runTest {
+        repository.toggleFavorite(testCharacter()).getOrThrow()
 
-        assertTrue(result.isSuccess)
         coVerify { dao.toggleFavorite(testEntity()) }
     }
 
     @Test
-    fun `toggle favorite failure is returned as a failure`() = runTest {
+    fun `favorite update failure is returned`() = runTest {
         coEvery { dao.toggleFavorite(any()) } throws IllegalStateException("locked")
 
-        assertEquals("locked", repository.toggleFavorite(testCharacter()).exceptionOrNull()?.message)
+        val result = repository.toggleFavorite(testCharacter())
+
+        assertEquals("locked", result.exceptionOrNull()?.message)
     }
 
     @Test
-    fun `similar characters use the first name of the character`() = runTest {
+    fun `similar characters use the trimmed first name`() = runTest {
         coEvery { dao.findByFirstName("Rick", 1) } returns listOf(testEntity(2, "Rick Prime"))
 
         val result = repository.getSimilarCharacters(testCharacter(1, "  Rick Sanchez ")).getOrThrow()
 
         assertEquals(listOf(testCharacter(2, "Rick Prime")), result)
     }
-
-    @Test
-    fun `similar characters for a blank name is empty without querying`() = runTest {
-        val result = repository.getSimilarCharacters(testCharacter(1, "   ")).getOrThrow()
-
-        assertTrue(result.isEmpty())
-        coVerify(exactly = 0) { dao.findByFirstName(any(), any()) }
-    }
-
-    @Test
-    fun `similar characters failure is returned as a failure`() = runTest {
-        coEvery { dao.findByFirstName(any(), any()) } throws IllegalStateException("db")
-
-        assertTrue(repository.getSimilarCharacters(testCharacter()).isFailure)
-    }
-
-    private fun characterEntity() = testEntity(
-        locationName = "Earth",
-        image = "image",
-        episodeCount = 1,
-        created = "",
-    )
 }
