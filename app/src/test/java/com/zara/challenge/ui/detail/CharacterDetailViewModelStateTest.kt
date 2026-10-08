@@ -1,7 +1,8 @@
-package com.zara.challenge
+package com.zara.challenge.ui.detail
 
-import com.zara.challenge.ui.common.UiText
 import com.zara.challenge.R
+import com.zara.challenge.testCharacter
+import com.zara.challenge.ui.common.UiText
 import androidx.lifecycle.SavedStateHandle
 import com.zara.challenge.domain.usecase.GetCharacterUseCase
 import com.zara.challenge.domain.usecase.GetSimilarCharactersUseCase

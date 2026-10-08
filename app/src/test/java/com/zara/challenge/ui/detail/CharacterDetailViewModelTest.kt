@@ -1,6 +1,7 @@
-package com.zara.challenge
+package com.zara.challenge.ui.detail
 
 import androidx.lifecycle.SavedStateHandle
+import com.zara.challenge.testCharacter
 import com.zara.challenge.domain.usecase.GetCharacterUseCase
 import com.zara.challenge.domain.usecase.GetSimilarCharactersUseCase
 import com.zara.challenge.domain.usecase.ObserveFavoriteIdsUseCase

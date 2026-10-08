@@ -1,7 +1,8 @@
-package com.zara.challenge
+package com.zara.challenge.ui.list
 
-import com.zara.challenge.ui.common.UiText
 import com.zara.challenge.R
+import com.zara.challenge.testCharacter
+import com.zara.challenge.ui.common.UiText
 import com.zara.challenge.domain.model.CharacterFilters
 import com.zara.challenge.domain.model.CharacterPage
 import com.zara.challenge.domain.usecase.GetCharactersUseCase

@@ -1,6 +1,9 @@
-package com.zara.challenge
+package com.zara.challenge.data.repository
 
 import android.util.Log
+import com.zara.challenge.testCharacter
+import com.zara.challenge.testDto
+import com.zara.challenge.testEntity
 import com.zara.challenge.data.local.CharacterDao
 import com.zara.challenge.data.local.CharacterEntity
 import com.zara.challenge.data.remote.ZaraChallengeApi
@@ -8,7 +11,6 @@ import com.zara.challenge.data.remote.dto.CharacterDto
 import com.zara.challenge.data.remote.dto.CharacterPageDto
 import com.zara.challenge.data.remote.dto.LocationDto
 import com.zara.challenge.data.remote.dto.PageInfoDto
-import com.zara.challenge.data.repository.CharacterRepositoryImpl
 import com.zara.challenge.domain.model.CharacterFilters
 import io.mockk.coEvery
 import io.mockk.coVerify

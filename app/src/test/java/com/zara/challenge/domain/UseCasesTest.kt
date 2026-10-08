@@ -28,6 +28,7 @@ class UseCasesTest {
     fun `get characters forwards page query and filters`() = runTest {
         val filters = CharacterFilters(status = "alive")
         val page = Result.success(CharacterPage(listOf(rick), 2, 5))
+
         coEvery { repository.getCharacters(2, "rick", filters) } returns page
 
         assertEquals(page, GetCharactersUseCase(repository)(2, "rick", filters))
