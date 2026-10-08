@@ -5,11 +5,8 @@ import com.zara.challenge.testCharacter
 import com.zara.challenge.testDto
 import com.zara.challenge.testEntity
 import com.zara.challenge.data.local.CharacterDao
-import com.zara.challenge.data.local.CharacterEntity
 import com.zara.challenge.data.remote.ZaraChallengeApi
-import com.zara.challenge.data.remote.dto.CharacterDto
 import com.zara.challenge.data.remote.dto.CharacterPageDto
-import com.zara.challenge.data.remote.dto.LocationDto
 import com.zara.challenge.data.remote.dto.PageInfoDto
 import com.zara.challenge.domain.model.CharacterFilters
 import io.mockk.coEvery
@@ -52,7 +49,7 @@ class CharacterRepositoryImplTest {
 
     @Test
     fun `list request forwards supported filters and caches results`() = runTest {
-        val dto = characterDto()
+        val dto = testDto(originName = "Earth", locationName = "Earth", image = "image", episodes = emptyList(), url = "", created = "")
         coEvery {
             api.getCharacters(
                 page = 1,
@@ -321,29 +318,7 @@ class CharacterRepositoryImplTest {
         assertTrue(repository.getSimilarCharacters(testCharacter()).isFailure)
     }
 
-    private fun characterDto() = CharacterDto(
-        id = 1,
-        name = "Rick Sanchez",
-        status = "Alive",
-        species = "Human",
-        type = "",
-        gender = "Male",
-        origin = LocationDto("Earth", ""),
-        location = LocationDto("Earth", ""),
-        image = "image",
-        episode = emptyList(),
-        url = "",
-        created = "",
-    )
-
-    private fun characterEntity() = CharacterEntity(
-        id = 1,
-        name = "Rick Sanchez",
-        status = "Alive",
-        species = "Human",
-        type = "",
-        gender = "Male",
-        originName = "Earth",
+    private fun characterEntity() = testEntity(
         locationName = "Earth",
         image = "image",
         episodeCount = 1,

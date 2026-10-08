@@ -3,7 +3,6 @@ package com.zara.challenge.ui.list
 import com.zara.challenge.R
 import com.zara.challenge.testCharacter
 import com.zara.challenge.ui.common.UiText
-import com.zara.challenge.domain.model.Character
 import com.zara.challenge.domain.model.CharacterFilters
 import com.zara.challenge.domain.model.CharacterPage
 import com.zara.challenge.domain.usecase.GetCharactersUseCase
@@ -48,7 +47,7 @@ class CharacterListViewModelTest {
 
     @Test
     fun `initial load exposes characters`() = runTest {
-        val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
+        val rick = testCharacter(locationName = "Earth", image = "image", episodeCount = 51)
         coEvery { useCase(1, "", CharacterFilters()) } returns
             Result.success(CharacterPage(listOf(rick), 1, 1))
 
@@ -62,8 +61,10 @@ class CharacterListViewModelTest {
 
     @Test
     fun `changing filters reloads the first page with selected criteria`() = runTest {
-        val initial = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
-        val filtered = Character(2, "Morty Smith", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
+        val initial = testCharacter(locationName = "Earth", image = "image", episodeCount = 51)
+        val filtered = testCharacter(
+            2, "Morty Smith", locationName = "Earth", image = "image", episodeCount = 51,
+        )
         val filters = CharacterFilters(status = "alive", gender = "male")
         coEvery { useCase(1, "", CharacterFilters()) } returns
             Result.success(CharacterPage(listOf(initial), 1, 2))
@@ -113,7 +114,7 @@ class CharacterListViewModelTest {
 
     @Test
     fun `load more failure preserves existing characters and emits one error`() = runTest {
-        val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
+        val rick = testCharacter(locationName = "Earth", image = "image", episodeCount = 51)
         coEvery { useCase(1, "", CharacterFilters()) } returns
             Result.success(CharacterPage(listOf(rick), 1, 2))
         coEvery { useCase(2, "", CharacterFilters()) } returns
@@ -151,7 +152,7 @@ class CharacterListViewModelTest {
 
     @Test
     fun `changing the query cancels an in-flight load more`() = runTest {
-        val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
+        val rick = testCharacter(locationName = "Earth", image = "image", episodeCount = 51)
         coEvery { useCase(1, "", CharacterFilters()) } returns
             Result.success(CharacterPage(listOf(rick), 1, 2))
         val cancellationObserved = stubSuspendUntilCancelled(2)
@@ -211,7 +212,7 @@ class CharacterListViewModelTest {
 
     @Test
     fun `changing filters cancels an in-flight load more`() = runTest {
-        val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
+        val rick = testCharacter(locationName = "Earth", image = "image", episodeCount = 51)
         val filters = CharacterFilters(status = "alive")
         coEvery { useCase(1, "", CharacterFilters()) } returns
             Result.success(CharacterPage(listOf(rick), 1, 2))
@@ -234,7 +235,7 @@ class CharacterListViewModelTest {
 
     @Test
     fun `cached results emit one offline notice`() = runTest {
-        val rick = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "Earth", "Earth", "image", 51, "created")
+        val rick = testCharacter(locationName = "Earth", image = "image", episodeCount = 51)
         coEvery { useCase(1, "", CharacterFilters()) } returns
             Result.success(CharacterPage(listOf(rick), 1, 1, isFromCache = true))
 
