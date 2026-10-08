@@ -1,7 +1,5 @@
-package com.zara.challenge.data.repository
+package com.zara.challenge.data.remote.dto
 
-import com.zara.challenge.data.remote.dto.toDomain
-import com.zara.challenge.data.remote.dto.toEntity
 import com.zara.challenge.ui.common.testCharacter
 import com.zara.challenge.ui.common.testDto
 import com.zara.challenge.ui.common.testEntity
