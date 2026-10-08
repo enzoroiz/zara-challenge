@@ -12,6 +12,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
@@ -83,6 +84,22 @@ class CharacterRepositoryImplTest {
         val result = repository.getCharacters(1, "", CharacterFilters())
 
         assertSame(offline, result.exceptionOrNull())
+    }
+
+    @Test
+    fun `request cancellation is propagated without reading cache`() = runTest {
+        val cancellation = CancellationException("request cancelled")
+        coEvery { api.getCharacters(any(), any(), any(), any()) } throws cancellation
+
+        val thrown = try {
+            repository.getCharacters(1, "", CharacterFilters())
+            null
+        } catch (error: CancellationException) {
+            error
+        }
+
+        assertSame(cancellation, thrown)
+        coVerify(exactly = 0) { dao.searchCharacters(any(), any(), any()) }
     }
 
     @Test

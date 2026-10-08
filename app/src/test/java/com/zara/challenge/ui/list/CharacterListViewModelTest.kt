@@ -12,9 +12,11 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -102,6 +104,67 @@ class CharacterListViewModelTest {
         assertEquals(listOf(rick, morty), viewModel.uiState.value.characters)
         assertFalse(viewModel.uiState.value.isLoadingMore)
         assertTrue(viewModel.uiState.value.endReached)
+    }
+
+    @Test
+    fun `query change cancels an in-flight load more request`() = runTest {
+        val cancellation = CompletableDeferred<CancellationException>()
+        coEvery { getCharacters(1, "", CharacterFilters()) } returns
+            Result.success(CharacterPage(listOf(rick), 1, 2))
+        coEvery { getCharacters(2, "", CharacterFilters()) } coAnswers {
+            try {
+                awaitCancellation()
+            } catch (error: CancellationException) {
+                cancellation.complete(error)
+                throw error
+            }
+        }
+        coEvery { getCharacters(1, "morty", CharacterFilters()) } returns
+            Result.success(CharacterPage(listOf(morty), 1, 1))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.loadMore()
+        runCurrent()
+        assertTrue(viewModel.uiState.value.isLoadingMore)
+
+        viewModel.onQueryChanged("morty")
+        runCurrent()
+
+        assertTrue(cancellation.isCompleted)
+        cancellation.await()
+        assertFalse(viewModel.uiState.value.isLoadingMore)
+    }
+
+    @Test
+    fun `filter change cancels an in-flight load more request`() = runTest {
+        val cancellation = CompletableDeferred<CancellationException>()
+        val filters = CharacterFilters(status = "alive")
+        coEvery { getCharacters(1, "", CharacterFilters()) } returns
+            Result.success(CharacterPage(listOf(rick), 1, 2))
+        coEvery { getCharacters(2, "", CharacterFilters()) } coAnswers {
+            try {
+                awaitCancellation()
+            } catch (error: CancellationException) {
+                cancellation.complete(error)
+                throw error
+            }
+        }
+        coEvery { getCharacters(1, "", filters) } returns
+            Result.success(CharacterPage(listOf(rick), 1, 2))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.loadMore()
+        runCurrent()
+        assertTrue(viewModel.uiState.value.isLoadingMore)
+
+        viewModel.onFiltersChanged(filters)
+        runCurrent()
+
+        assertTrue(cancellation.isCompleted)
+        cancellation.await()
+        assertFalse(viewModel.uiState.value.isLoadingMore)
     }
 
     @Test
