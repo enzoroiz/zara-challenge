@@ -78,7 +78,6 @@ fun CharacterDetailScreen(
                 )
             }
             delay(3.seconds)
-            onBack()
         }
     }
 
