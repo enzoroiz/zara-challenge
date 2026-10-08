@@ -6,7 +6,7 @@ import com.zara.challenge.domain.model.CharacterPage
 import com.zara.challenge.domain.usecase.GetCharactersUseCase
 import com.zara.challenge.domain.usecase.ObserveFavoriteIdsUseCase
 import com.zara.challenge.domain.usecase.ToggleFavoriteUseCase
-import com.zara.challenge.testCharacter
+import com.zara.challenge.ui.common.testCharacter
 import com.zara.challenge.ui.common.UiText
 import io.mockk.coEvery
 import io.mockk.coVerify

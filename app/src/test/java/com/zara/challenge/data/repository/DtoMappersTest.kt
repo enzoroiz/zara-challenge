@@ -2,9 +2,9 @@ package com.zara.challenge.data.repository
 
 import com.zara.challenge.data.remote.dto.toDomain
 import com.zara.challenge.data.remote.dto.toEntity
-import com.zara.challenge.testCharacter
-import com.zara.challenge.testDto
-import com.zara.challenge.testEntity
+import com.zara.challenge.ui.common.testCharacter
+import com.zara.challenge.ui.common.testDto
+import com.zara.challenge.ui.common.testEntity
 import org.junit.Assert
 import org.junit.Test
 

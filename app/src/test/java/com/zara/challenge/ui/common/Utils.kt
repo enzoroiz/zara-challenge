@@ -1,4 +1,4 @@
-package com.zara.challenge
+package com.zara.challenge.ui.common
 
 import com.zara.challenge.data.local.CharacterEntity
 import com.zara.challenge.data.remote.dto.CharacterDto

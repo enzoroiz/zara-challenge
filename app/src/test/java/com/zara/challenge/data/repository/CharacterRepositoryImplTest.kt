@@ -5,9 +5,9 @@ import com.zara.challenge.data.remote.ZaraChallengeApi
 import com.zara.challenge.data.remote.dto.CharacterPageDto
 import com.zara.challenge.data.remote.dto.PageInfoDto
 import com.zara.challenge.domain.model.CharacterFilters
-import com.zara.challenge.testCharacter
-import com.zara.challenge.testDto
-import com.zara.challenge.testEntity
+import com.zara.challenge.ui.common.testCharacter
+import com.zara.challenge.ui.common.testDto
+import com.zara.challenge.ui.common.testEntity
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every

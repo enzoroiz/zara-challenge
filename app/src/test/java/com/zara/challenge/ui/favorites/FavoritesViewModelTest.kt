@@ -4,7 +4,7 @@ import com.zara.challenge.ui.common.UiText
 import com.zara.challenge.R
 import com.zara.challenge.domain.usecase.ObserveFavoritesUseCase
 import com.zara.challenge.domain.usecase.ToggleFavoriteUseCase
-import com.zara.challenge.testCharacter
+import com.zara.challenge.ui.common.testCharacter
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain

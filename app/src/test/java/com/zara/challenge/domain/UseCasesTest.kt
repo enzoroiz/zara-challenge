@@ -9,7 +9,7 @@ import com.zara.challenge.domain.usecase.GetSimilarCharactersUseCase
 import com.zara.challenge.domain.usecase.ObserveFavoriteIdsUseCase
 import com.zara.challenge.domain.usecase.ObserveFavoritesUseCase
 import com.zara.challenge.domain.usecase.ToggleFavoriteUseCase
-import com.zara.challenge.testCharacter
+import com.zara.challenge.ui.common.testCharacter
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every

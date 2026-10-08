@@ -3,7 +3,7 @@ package com.zara.challenge.data.local
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.zara.challenge.testEntity
+import com.zara.challenge.ui.common.testEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
