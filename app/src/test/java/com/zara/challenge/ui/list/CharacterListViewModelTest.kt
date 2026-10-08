@@ -31,6 +31,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CharacterListViewModelTest {
@@ -93,7 +94,7 @@ class CharacterListViewModelTest {
         assertFalse(vm.uiState.value.isLoading)
         assertTrue(vm.uiState.value.hasLoadError)
         assertEquals(UiText.Res(R.string.error_generic), vm.errorEvents.first())
-        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
+        assertNull(withTimeoutOrNull(1.milliseconds) { vm.errorEvents.first() })
     }
 
     @Test
@@ -130,7 +131,7 @@ class CharacterListViewModelTest {
         assertFalse(vm.uiState.value.isLoadingMore)
         assertFalse(vm.uiState.value.hasLoadError)
         assertEquals(UiText.Res(R.string.error_generic), vm.errorEvents.first())
-        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
+        assertNull(withTimeoutOrNull(1.milliseconds) { vm.errorEvents.first() })
     }
 
     private fun stubSuspendUntilCancelled(
@@ -245,6 +246,6 @@ class CharacterListViewModelTest {
         dispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(UiText.Res(R.string.offline_results), vm.errorEvents.first())
-        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
+        assertNull(withTimeoutOrNull(1.milliseconds) { vm.errorEvents.first() })
     }
 }

@@ -27,6 +27,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FavoritesViewModelTest {
@@ -99,7 +100,7 @@ class FavoritesViewModelTest {
         dispatcher.scheduler.advanceUntilIdle()
 
         coVerify(exactly = 1) { toggleFavorite(rick) }
-        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
+        assertNull(withTimeoutOrNull(1.milliseconds) { vm.errorEvents.first() })
     }
 
     @Test

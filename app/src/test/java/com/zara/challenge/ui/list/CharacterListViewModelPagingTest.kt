@@ -33,6 +33,7 @@ import org.junit.Test
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CharacterListViewModelPagingTest {
@@ -227,7 +228,7 @@ class CharacterListViewModelPagingTest {
 
         assertEquals(UiText.Res(R.string.offline_results), vm.errorEvents.first())
         assertEquals(UiText.Res(R.string.offline_results), vm.errorEvents.first())
-        assertNull(withTimeoutOrNull(1) { vm.errorEvents.first() })
+        assertNull(withTimeoutOrNull(1.milliseconds) { vm.errorEvents.first() })
     }
 
     @Test
