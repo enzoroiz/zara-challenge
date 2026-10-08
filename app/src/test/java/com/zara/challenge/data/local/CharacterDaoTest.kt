@@ -94,10 +94,12 @@ class CharacterDaoTest {
         dao.toggleFavorite(rick)
         assertTrue(dao.isFavorite(1))
         assertEquals(setOf(1), dao.observeFavoriteIds().first().toSet())
+        assertEquals(listOf(1), dao.observeFavorites().first().map { it.id })
 
         dao.toggleFavorite(rick)
         assertFalse(dao.isFavorite(1))
         assertTrue(dao.observeFavoriteIds().first().isEmpty())
+        assertTrue(dao.observeFavorites().first().isEmpty())
     }
 
     @Test
@@ -159,7 +161,7 @@ class CharacterDaoTest {
             ),
         )
 
-        val matches = dao.findByFirstName("Rick", characterId = 1)
+        val matches = dao.findByFirstName("rIcK", characterId = 1)
 
         assertEquals(5, matches.size)
         assertTrue(matches.none { it.id == 1 || it.id == 8 || it.id == 9 })
