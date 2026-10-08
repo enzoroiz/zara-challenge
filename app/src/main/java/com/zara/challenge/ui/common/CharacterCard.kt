@@ -34,10 +34,6 @@ import com.zara.challenge.ui.theme.ZaraChallengeTheme
 import coil3.compose.AsyncImage
 import com.zara.challenge.domain.model.Character
 
-/**
- * Single card representation of a [Character], used across the character list,
- * favorites, and carousel screens.
- */
 @Composable
 fun CharacterCard(
     character: Character,
